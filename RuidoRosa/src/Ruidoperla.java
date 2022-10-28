@@ -1,6 +1,7 @@
 
 //import java.io.Serial;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import ch.bildspur.postfx.builder.PostFX;
 import controlP5.ControlP5;
@@ -128,7 +129,11 @@ public class Ruidoperla extends PApplet {
 
 		// Set ANim Seq
 		Ani.init(this);
-		setAnimSeq();
+		
+		
+		//setAnimSeq();
+		
+		startAnimSeq("animSeq.json");
 
 		velX = 0.1f;
 		velY = 0.2f;
@@ -171,23 +176,7 @@ public class Ruidoperla extends PApplet {
 		f = createFont("SourceCodePro-Regular.ttf", 72);
 
 		// JSON CAMStates
-		camStatesJSON = new JSONArray();
-		indexJSON = 0;
-		camStatesJSONImport = loadJSONArray("camStates.json");
-
-		println(camStatesJSONImport);
-		for (int i = 0; i < camStatesJSONImport.size(); i++) {
-			JSONObject thisCamState = camStatesJSONImport.getJSONObject(i);
-			int id = thisCamState.getInt("id");
-			JSONArray posJSON = thisCamState.getJSONArray("position");
-			float[] pos = { posJSON.getFloat(0), posJSON.getFloat(1), posJSON.getFloat(2) };
-			JSONArray rotJSON = thisCamState.getJSONArray("rotation");
-			float[] rot = { rotJSON.getFloat(0), rotJSON.getFloat(1), rotJSON.getFloat(2) };
-			float dist = thisCamState.getFloat("distance");
-			Rotation Rota = new Rotation(RotationOrder.XYZ, rot[0], rot[1], rot[2]);
-			Vector3D center = new Vector3D(pos[0], pos[1], pos[2]);
-			camStates.add(new CameraState(Rota, center, dist));
-		}
+		importCameraAnimation("camStates.json");
 		// gradient
 
 		peasyGradients = new PeasyGradients(this);
@@ -198,95 +187,139 @@ public class Ruidoperla extends PApplet {
 		grad.primeAnimation();
 		grad.setInterpolationMode(Interpolation.SMOOTH_STEP);
 	}
+	
+@Override
+public void draw() {
+	// background(BG_CLR);
+	// peasyGradients.linearGradient(grad, 45); // angle = 0 (horizontal)
+	peasyGradients.spiralGradient(grad, new PVector(width / 2, height / 2), (float) (frameCount * 0.02), 3);
 
-	@Override
-	public void draw() {
-		// background(BG_CLR);
-		// peasyGradients.linearGradient(grad, 45); // angle = 0 (horizontal)
-		peasyGradients.spiralGradient(grad, new PVector(width / 2, height / 2), (float) (frameCount * 0.02), 3);
+	// peasyGradients.noiseGradient(grad, new PVector(width*0.5,height*0.5),45,1.0);
+	// // angle = 0 (horizontal)
 
-		// peasyGradients.noiseGradient(grad, new PVector(width*0.5,height*0.5),45,1.0);
-		// // angle = 0 (horizontal)
-
-		lights();
-		noiseDetail(octava, falloff);
-		offset -= velocidad / 1000;
-		float yoff = offset;
-		for (int y = 0; y < resY; y++) {
-			float xoff = 0;
-			for (int x = 0; x < resX; x++) {
-				// altitud[x][y] = random(-10, 10);
-				altitud[x][y] = map(noise(xoff, yoff), 0.f, 1.f, -amplitud, amplitud);
-				xoff += velX;
-			}
-			yoff += velY;
+	lights();
+	noiseDetail(octava, falloff);
+	offset -= velocidad / 1000;
+	float yoff = offset;
+	for (int y = 0; y < resY; y++) {
+		float xoff = 0;
+		for (int x = 0; x < resX; x++) {
+			// altitud[x][y] = random(-10, 10);
+			altitud[x][y] = map(noise(xoff, yoff), 0.f, 1.f, -amplitud, amplitud);
+			xoff += velX;
 		}
-
-		// setGradient(0, 0, width, height, c1, c2, Y_AXIS);
-		stroke(LINE_CLR);
-		// noFill();
-		fill(200, 100);
-		// fill(255, 255,255, 200);
-		translate(width / 2, height / 2);
-		rotateX(PI / 3);
-		translate(-w / 2, -h / 2);
-		for (int y = 0; y < resY - 1; y++) {
-			// for everysingle row
-			// beginShape(TRIANGLE_STRIP);
-
-			beginShape(QUAD_STRIP);
-			for (int x = 0; x < resX; x++) {
-				vertex(x * scl, y * scl, altitud[x][y]);
-				vertex(x * scl, (y + 1) * scl, altitud[x][y + 1]);
-				// DISPLAY TEXT -
-				float v = map(altitud[x][y], -amplitud, amplitud, 0.f, 1.f);
-				if ((x % 40 == 0) && (y % 30 == 0)) {
-					if (TEXT)
-						text(v, x * scl, y * scl, altitud[x][y] + 10);
-				}
-			}
-			endShape();
-		}
-		// only for TEXT -
-		textSize(48);
-		fill(255);
-
-		fx.render().blur(2, 2.0f)
-				// .chromaticAberration()
-				// .vignette(1.0,0.5)
-				.compose();
-
-		if (GUI) {
-			gui();
-		}
-
-		//// LETTER on TOP
-
-		hint(DISABLE_DEPTH_TEST);
-		cam.beginHUD();
-		fill(255, 255, 0);
-		textFont(f);
-		if (TEXT) {
-			text("contemplate", width / 2, height / 2);
-		}
-		cam.endHUD();
-		hint(ENABLE_DEPTH_TEST);
-
-		if (firstContact) {
-			// if (port.available() > 0){
-			sendSerial();
-			// }
-		}
-
-		// CAM ANIMATIONS
-		if (CAM_ANIM) {
-			if (millis() >= nextEvent) {
-				// randomCameraMove();
-				animateCamera();
-			}
-		}
+		yoff += velY;
 	}
 
+	// setGradient(0, 0, width, height, c1, c2, Y_AXIS);
+	stroke(LINE_CLR);
+	// noFill();
+	fill(200, 100);
+	// fill(255, 255,255, 200);
+	translate(width / 2, height / 2);
+	rotateX(PI / 3);
+	translate(-w / 2, -h / 2);
+	for (int y = 0; y < resY - 1; y++) {
+		// for everysingle row
+		// beginShape(TRIANGLE_STRIP);
+
+		beginShape(QUAD_STRIP);
+		for (int x = 0; x < resX; x++) {
+			vertex(x * scl, y * scl, altitud[x][y]);
+			vertex(x * scl, (y + 1) * scl, altitud[x][y + 1]);
+			// DISPLAY TEXT -
+			float v = map(altitud[x][y], -amplitud, amplitud, 0.f, 1.f);
+			if ((x % 40 == 0) && (y % 30 == 0)) {
+				if (TEXT)
+					text(v, x * scl, y * scl, altitud[x][y] + 10);
+			}
+		}
+		endShape();
+	}
+	// only for TEXT -
+	textSize(48);
+	fill(255);
+
+	fx.render().blur(2, 2.0f)
+			// .chromaticAberration()
+			// .vignette(1.0,0.5)
+			.compose();
+
+	if (GUI) {
+		gui();
+	}
+
+	//// LETTER on TOP
+
+	hint(DISABLE_DEPTH_TEST);
+	cam.beginHUD();
+	fill(255, 255, 0);
+	textFont(f);
+	if (TEXT) {
+		text("contemplate", width / 2, height / 2);
+	}
+	cam.endHUD();
+	hint(ENABLE_DEPTH_TEST);
+
+	if (firstContact) {
+		// if (port.available() > 0){
+		sendSerial();
+		// }
+	}
+
+	// CAM ANIMATIONS
+	if (CAM_ANIM) {
+		if (millis() >= nextEvent) {
+			// randomCameraMove();
+			animateCamera();
+		}
+	}
+}
+private void importCameraAnimation(String json) {
+	camStatesJSON = new JSONArray();
+	indexJSON = 0;
+	camStatesJSONImport = loadJSONArray(json);
+
+	println(camStatesJSONImport);
+	for (int i = 0; i < camStatesJSONImport.size(); i++) {
+		JSONObject thisCamState = camStatesJSONImport.getJSONObject(i);
+		int id = thisCamState.getInt("id");
+		JSONArray posJSON = thisCamState.getJSONArray("position");
+		float[] pos = { posJSON.getFloat(0), posJSON.getFloat(1), posJSON.getFloat(2) };
+		JSONArray rotJSON = thisCamState.getJSONArray("rotation");
+		float[] rot = { rotJSON.getFloat(0), rotJSON.getFloat(1), rotJSON.getFloat(2) };
+		float dist = thisCamState.getFloat("distance");
+		Rotation Rota = new Rotation(RotationOrder.XYZ, rot[0], rot[1], rot[2]);
+		Vector3D center = new Vector3D(pos[0], pos[1], pos[2]);
+		camStates.add(new CameraState(Rota, center, dist));
+	}
+}
+
+	private void startAnimSeq(String jsonfile) {
+	// TODO Auto-generated method stub
+		
+		JSONArray jsonArray = loadJSONArray(jsonfile);
+		
+		seq = new AniSequence(this);
+		seq.beginSequence();
+		
+		for (int i = 0; i < jsonArray.size(); i++) {
+			
+			
+		}
+		
+		
+		//seq.add(Ani.to(this, 10, "octava:2,velocidad:30.0"));
+
+		// step 1
+		//seq.add(Ani.to(this, 10, "falloff", 2));
+		
+		seq.endSequence();
+		
+		
+		
+
+}
 	public void setAnimSeq() {
 
 		// create a sequence
