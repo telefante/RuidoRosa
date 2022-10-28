@@ -1,0 +1,26 @@
+{
+  "steps" : [
+    {
+      "duration" : 10,
+      "animate" : [
+        {
+          "variable" : "falloff",
+          "to" : 3.4
+        },
+        {
+          "variable" : "velocity",
+          "to" : 9
+        }
+      ]
+    },
+    {
+      "duration" : 2,
+      "animate" : [
+        {
+          "variable" : "velocity",
+          "to" : 0
+        }
+      ]
+    }
+  ]
+}
