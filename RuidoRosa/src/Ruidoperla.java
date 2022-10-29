@@ -299,12 +299,36 @@ private void importCameraAnimation(String json) {
 	// TODO Auto-generated method stub
 		
 		JSONArray jsonArray = loadJSONArray(jsonfile);
-		
+		println(jsonArray);
 		seq = new AniSequence(this);
 		seq.beginSequence();
 		
 		for (int i = 0; i < jsonArray.size(); i++) {
+			JSONObject thisStep = jsonArray.getJSONObject(i);
+			int dur = thisStep.getInt("duration");
+			JSONArray animationVariables = thisStep.getJSONArray("animate");
 			
+			String string = null;
+			for (int j = 0; j < animationVariables.size(); j++) {
+				JSONObject js =  animationVariables.getJSONObject(j);
+				if (j == 0 ) {
+					string = js.getString("variable");
+					string += ":";
+					float value = js.getFloat("to");
+					string += str(value);
+					
+				} else {
+					string += ",";
+					string +=  js.getString("variable");
+					string += ":";
+					float value = js.getFloat("to");
+					string += str(value);
+				}
+				
+			}
+			println(string);
+			
+			seq.add(Ani.to(this, dur, string));
 			
 		}
 		
@@ -316,7 +340,7 @@ private void importCameraAnimation(String json) {
 		
 		seq.endSequence();
 		
-		
+		seq.start();
 		
 
 }
@@ -324,19 +348,19 @@ private void importCameraAnimation(String json) {
 
 		// create a sequence
 		// dont forget to call beginSequence() and endSequence()
-		seq = new AniSequence(this);
-		seq.beginSequence();
-
-		// step 0
-		seq.add(Ani.to(this, 10, "octava:2,velocidad:30.0"));
-
-		// step 1
-		seq.add(Ani.to(this, 10, "falloff", 2));
-
-		seq.endSequence();
-
-		// start the whole sequence
-		seq.start();
+//		seq = new AniSequence(this);
+//		seq.beginSequence();
+//
+//		// step 0
+//		seq.add(Ani.to(this, 10, "octava:2,velocidad:30.0"));
+//
+//		// step 1
+//		seq.add(Ani.to(this, 10, "falloff", 2));
+//
+//		seq.endSequence();
+//
+//		// start the whole sequence
+//		seq.start();
 	}
 
 	public void animateCamera() {

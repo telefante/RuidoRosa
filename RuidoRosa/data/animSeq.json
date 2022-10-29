@@ -1,26 +1,28 @@
-{
-  "steps" : [
-    {
-      "duration" : 10,
-      "animate" : [
-        {
-          "variable" : "falloff",
-          "to" : 3.4
-        },
-        {
-          "variable" : "velocity",
-          "to" : 9
-        }
-      ]
-    },
-    {
-      "duration" : 2,
-      "animate" : [
-        {
-          "variable" : "velocity",
-          "to" : 0
-        }
-      ]
-    }
-  ]
-}
+[
+  {
+    "duration" : 10,
+    "animate" : [
+      {
+        "variable" : "velocidad",
+        "to" : 10
+      }
+    ]
+  },
+  {
+    "duration" : 12,
+    "animate" : [
+      {
+        "variable" : "falloff",
+        "to" : 0.3
+      },
+      {
+        "variable" : "velocidad",
+        "to" : 0
+      },
+      {
+        "variable" : "octava",
+        "to" : 4
+      }
+    ]
+  }
+]
