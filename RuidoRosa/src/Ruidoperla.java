@@ -127,11 +127,28 @@ public class Ruidoperla extends PApplet {
 
 			lines = loadFile(file);
 			actualIndex = 0;
-			fadeOut = 2.f;
-			fadeIn = 8.f;
+			fadeOut = 2.0f;
+			fadeIn = 3.f;
 			alpha = 0.f;
+			sustain = 7.f;
 
-			fadingAni = new Ani(this, fadeIn, "alpha", 255.f);
+		//	Ani.to(this, fadeIn, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
+			fadingAni = new Ani(this, fadeIn, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
+
+		}
+
+		void fadeOutAfter() {
+			println("fadeOut");
+			Ani.to(this, fadeOut, "alpha", sustain, Ani.EXPO_IN_OUT, "onEnd:nextLine");
+		}
+
+		public void nextLine() {
+			println("nextLine");
+			actualIndex++;
+			if (actualIndex > lines.length) {
+				actualIndex = 0;
+			}
+			Ani.to(this, fadeIn, "alpha", 1000, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
 
 		}
 
@@ -147,7 +164,7 @@ public class Ruidoperla extends PApplet {
 			textAlign(CENTER);
 			text(lines[actualIndex], 0, 0);
 			popMatrix();
-			println(alpha);
+			//println(alpha);
 		}
 
 		public String[] loadFile(String txt) {
