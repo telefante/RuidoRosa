@@ -1,28 +1,59 @@
 [
-  {
-    "duration" : 10,
-    "animate" : [
-      {
-        "variable" : "velocidad",
-        "to" : 10
-      }
-    ]
-  },
-  {
-    "duration" : 12,
-    "animate" : [
-      {
-        "variable" : "falloff",
-        "to" : 0.3
-      },
-      {
-        "variable" : "velocidad",
-        "to" : 0
-      },
-      {
-        "variable" : "octava",
-        "to" : 4
-      }
-    ]
-  }
+	{
+		"duration": 3,
+		"animate": [
+			{
+				"variable": "velocidad",
+				"to": 0.0
+			}
+		]
+	},
+	{
+		"duration": 20,
+		"animate": [
+			{
+				"variable": "velocidad",
+				"to": 10.0
+			},
+			{
+				"variable": "falloff",
+				"to": 0.25
+			}
+		]
+	},
+	{
+		"duration": 20,
+		"animate": [
+			{
+				"variable": "falloff",
+				"to": 0.75
+			}
+		]
+	},
+	{
+		"duration": 20,
+		"animate": [
+			{
+				"variable": "velocidad",
+				"to": 0.02
+			},
+			{
+				"variable": "falloff",
+				"to": 0.0
+			}
+		]
+	},
+	{
+		"duration": 20,
+		"animate": [
+			{
+				"variable": "velocidad",
+				"to": 5.0
+			},
+			{
+				"variable": "falloff",
+				"to": 0.2
+			}
+		]
+	}
 ]

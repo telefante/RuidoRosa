@@ -48,7 +48,8 @@ public class Ruidoperla extends PApplet {
 	CameraState state;
 
 	boolean CAM_ANIM = true;
-	int ANIM_TIME = 10000;
+	boolean GEOMETRY_ANIM = false;
+	int ANIM_TIME = 30000;
 	long nextEvent = 0;
 	int r;
 	JSONArray camStatesJSON, camStatesJSONImport;
@@ -70,9 +71,9 @@ public class Ruidoperla extends PApplet {
 ///- ---------
 //noiseDetail
 //number of octaves to be used by the noise
-	int octava = 1;
+	int octava = 2;
 //falloff factor for each octave
-	float falloff = 0.9f;
+	float falloff = 0.0f;
 
 	int resX, resY;
 
@@ -98,14 +99,12 @@ public class Ruidoperla extends PApplet {
 
 	float velX, velY;
 	float offset = 0;
-	float velocidad = 0.02f;
+	float velocidad = 0.0f;
 
 	// method used only for setting the size of the window
 	public void settings() {
 		size(1280, 720, OPENGL);
 	}
-//// SETUP ------------------------------
-/// - - - - - - - - - - - - - - - - - - -
 
 	@Override
 	public void setup() {
@@ -117,7 +116,7 @@ public class Ruidoperla extends PApplet {
 		// r = int(random(0, 3));
 		r = 0;
 		// off = createGraphics(600,600);
-		size(1280, 720, OPENGL);
+		// size(1280, 720, OPENGL);
 
 		cam = new PeasyCam(this, 100);
 		cam.setActive(false);
@@ -129,12 +128,13 @@ public class Ruidoperla extends PApplet {
 
 		// Set ANim Seq
 		Ani.init(this);
-		
-		
-		//setAnimSeq();
-		
-		startAnimSeq("animSeq.json");
 
+		// setAnimSeq();
+		if (GEOMETRY_ANIM) {
+			startAnimSeq("animSeqSteps.json");
+		}
+		
+		
 		velX = 0.1f;
 		velY = 0.2f;
 		resX = w / scl;
@@ -156,16 +156,9 @@ public class Ruidoperla extends PApplet {
 		}
 		println("size of actors Array: " + actors.size());
 
-		// Open the port that thrÏe board is connected to and use the same speed (9600
-		// bps)
-		// port = new Serial(this, 9600); // Comment this line if it's not the correct
-		// port
-		// Ifthe above does not work uncomment the lines below to choose the correct
-		// port
 		// List all the available serial ports, preceded by their index number:
 		printArray(Serial.list());
 		// Instead of 0 input the index number of the port you are using:
-
 		// String port = findPort();
 		port = new Serial(this, Serial.list()[1], 115200);
 		firstContact = false;
@@ -173,7 +166,7 @@ public class Ruidoperla extends PApplet {
 		// microcontroller;
 
 		// FONT
-		f = createFont("SourceCodePro-Regular.ttf", 72);
+		f = createFont("SourceCodePro-Regular.ttf", 114);
 
 		// JSON CAMStates
 		importCameraAnimation("camStates.json");
@@ -187,163 +180,221 @@ public class Ruidoperla extends PApplet {
 		grad.primeAnimation();
 		grad.setInterpolationMode(Interpolation.SMOOTH_STEP);
 	}
-	
-@Override
-public void draw() {
-	// background(BG_CLR);
-	// peasyGradients.linearGradient(grad, 45); // angle = 0 (horizontal)
-	peasyGradients.spiralGradient(grad, new PVector(width / 2, height / 2), (float) (frameCount * 0.02), 3);
+//// SETUP ------------------------------
+/// - - - - - - - - - - - - - - - - - - -
 
-	// peasyGradients.noiseGradient(grad, new PVector(width*0.5,height*0.5),45,1.0);
-	// // angle = 0 (horizontal)
+	public void serialEvent(Serial port) {
 
-	lights();
-	noiseDetail(octava, falloff);
-	offset -= velocidad / 1000;
-	float yoff = offset;
-	for (int y = 0; y < resY; y++) {
-		float xoff = 0;
-		for (int x = 0; x < resX; x++) {
-			// altitud[x][y] = random(-10, 10);
-			altitud[x][y] = map(noise(xoff, yoff), 0.f, 1.f, -amplitud, amplitud);
-			xoff += velX;
-		}
-		yoff += velY;
-	}
+		// if this is the first byte received, and it's an A,
+		// clear the serial buffer and note that you've
+		// had first contact from the microcontroller.
+		// Otherwise, read the incoming String to inBuffer:
+		//
 
-	// setGradient(0, 0, width, height, c1, c2, Y_AXIS);
-	stroke(LINE_CLR);
-	// noFill();
-	fill(200, 100);
-	// fill(255, 255,255, 200);
-	translate(width / 2, height / 2);
-	rotateX(PI / 3);
-	translate(-w / 2, -h / 2);
-	for (int y = 0; y < resY - 1; y++) {
-		// for everysingle row
-		// beginShape(TRIANGLE_STRIP);
+	//	port.bufferUntil(10);
+		if (!firstContact) {
+			// read a byte from the serial port:
+			int inByte = port.read();
+			if (inByte == 'X') {
+				// port.clear(); // clear the serial port buffer
+				firstContact = true; // you've had first contact from the
+				// microcontroller
+				println("connected to : " + port);
+			}
+		} else {
+			String inBuffer = port.readString();
+			if (inBuffer != null) {
+				print(inBuffer);
 
-		beginShape(QUAD_STRIP);
-		for (int x = 0; x < resX; x++) {
-			vertex(x * scl, y * scl, altitud[x][y]);
-			vertex(x * scl, (y + 1) * scl, altitud[x][y + 1]);
-			// DISPLAY TEXT -
-			float v = map(altitud[x][y], -amplitud, amplitud, 0.f, 1.f);
-			if ((x % 40 == 0) && (y % 30 == 0)) {
-				if (TEXT)
-					text(v, x * scl, y * scl, altitud[x][y] + 10);
 			}
 		}
-		endShape();
-	}
-	// only for TEXT -
-	textSize(48);
-	fill(255);
-
-	fx.render().blur(2, 2.0f)
-			// .chromaticAberration()
-			// .vignette(1.0,0.5)
-			.compose();
-
-	if (GUI) {
-		gui();
 	}
 
-	//// LETTER on TOP
+	public void sendSerial() {
+		String str = "s ";
 
-	hint(DISABLE_DEPTH_TEST);
-	cam.beginHUD();
-	fill(255, 255, 0);
-	textFont(f);
-	if (TEXT) {
-		text("contemplate", width / 2, height / 2);
+		for (int i = 0; i < 6; i++) {
+			if (i > 0) {
+				str += " ";// We add a comma before each value, except the first value
+			}
+			Actor thisActor = actors.get(i);
+			// float grad = int(degrees(thisActor.rot));
+			// float serRot = map(grad, 0,360, 0, 180);
+			float serRot = map(thisActor.rot, 0, 360, 0, 360);
+			// println(thisActor.rot);
+			str += (int) thisActor.rot;// We concatenate each number in the string.
+			// println(str);
+		}
+
+		// while (port.available() > 0) {
+		port.write(str);
+		port.write(13);
+
+		// println(str);
+
+//		}
 	}
-	cam.endHUD();
-	hint(ENABLE_DEPTH_TEST);
 
-	if (firstContact) {
-		// if (port.available() > 0){
-		sendSerial();
-		// }
-	}
+	@Override
+	public void draw() {
+		// background(BG_CLR);
+		// peasyGradients.linearGradient(grad, 45); // angle = 0 (horizontal)
+		peasyGradients.spiralGradient(grad, new PVector(width / 2, height / 2), (float) (frameCount * 0.02), 3);
 
-	// CAM ANIMATIONS
-	if (CAM_ANIM) {
-		if (millis() >= nextEvent) {
-			// randomCameraMove();
-			animateCamera();
+		// peasyGradients.noiseGradient(grad, new PVector(width*0.5,height*0.5),45,1.0);
+		// // angle = 0 (horizontal)
+
+		lights();
+		noiseDetail(octava, falloff);
+		offset -= velocidad / 1000;
+		float yoff = offset;
+		for (int y = 0; y < resY; y++) {
+			float xoff = 0;
+			for (int x = 0; x < resX; x++) {
+				// altitud[x][y] = random(-10, 10);
+				altitud[x][y] = map(noise(xoff, yoff), 0.f, 1.f, -amplitud, amplitud);
+				xoff += velX;
+			}
+			yoff += velY;
+		}
+
+		// setGradient(0, 0, width, height, c1, c2, Y_AXIS);
+		stroke(LINE_CLR);
+		// noFill();
+		fill(200, 100);
+		// fill(255, 255,255, 200);
+		translate(width / 2, height / 2);
+		rotateX(PI / 3);
+		translate(-w / 2, -h / 2);
+		for (int y = 0; y < resY - 1; y++) {
+			// for everysingle row
+			// beginShape(TRIANGLE_STRIP);
+
+			beginShape(QUAD_STRIP);
+			for (int x = 0; x < resX; x++) {
+				vertex(x * scl, y * scl, altitud[x][y]);
+				vertex(x * scl, (y + 1) * scl, altitud[x][y + 1]);
+				// DISPLAY TEXT -
+				float v = map(altitud[x][y], -amplitud, amplitud, 0.f, 1.f);
+				if ((x % 40 == 0) && (y % 30 == 0)) {
+					if (TEXT)
+						text(v, x * scl, y * scl, altitud[x][y] + 10);
+				}
+			}
+			endShape();
+		}
+		// only for TEXT -
+		textSize(48);
+		fill(255);
+
+		fx.render().blur(2, 2.0f)
+				// .chromaticAberration()
+				// .vignette(1.0,0.5)
+				.compose();
+
+		if (GUI) {
+			gui();
+		}
+
+		//// LETTER on TOP
+
+		hint(DISABLE_DEPTH_TEST);
+		cam.beginHUD();
+		fill(255, 255, 0);
+		textFont(f);
+		textAlign(CENTER);
+		if (TEXT) {
+			text("contemplate", width / 2, height / 2);
+		}
+		cam.endHUD();
+		hint(ENABLE_DEPTH_TEST);
+
+		if (firstContact) {
+			// if (port.available() > 0){
+			sendSerial();
+			// }
+		}
+
+		// CAM ANIMATIONS
+		if (CAM_ANIM) {
+			if (millis() >= nextEvent) {
+				// randomCameraMove();
+				animateCamera();
+			}
 		}
 	}
-}
-private void importCameraAnimation(String json) {
-	camStatesJSON = new JSONArray();
-	indexJSON = 0;
-	camStatesJSONImport = loadJSONArray(json);
 
-	println(camStatesJSONImport);
-	for (int i = 0; i < camStatesJSONImport.size(); i++) {
-		JSONObject thisCamState = camStatesJSONImport.getJSONObject(i);
-		int id = thisCamState.getInt("id");
-		JSONArray posJSON = thisCamState.getJSONArray("position");
-		float[] pos = { posJSON.getFloat(0), posJSON.getFloat(1), posJSON.getFloat(2) };
-		JSONArray rotJSON = thisCamState.getJSONArray("rotation");
-		float[] rot = { rotJSON.getFloat(0), rotJSON.getFloat(1), rotJSON.getFloat(2) };
-		float dist = thisCamState.getFloat("distance");
-		Rotation Rota = new Rotation(RotationOrder.XYZ, rot[0], rot[1], rot[2]);
-		Vector3D center = new Vector3D(pos[0], pos[1], pos[2]);
-		camStates.add(new CameraState(Rota, center, dist));
+	private void importCameraAnimation(String json) {
+		camStatesJSON = new JSONArray();
+		indexJSON = 0;
+		camStatesJSONImport = loadJSONArray(json);
+
+		// println(camStatesJSONImport);
+		println(json + " is loaded!. ");
+
+		for (int i = 0; i < camStatesJSONImport.size(); i++) {
+			JSONObject thisCamState = camStatesJSONImport.getJSONObject(i);
+			int id = thisCamState.getInt("id");
+			JSONArray posJSON = thisCamState.getJSONArray("position");
+			float[] pos = { posJSON.getFloat(0), posJSON.getFloat(1), posJSON.getFloat(2) };
+			JSONArray rotJSON = thisCamState.getJSONArray("rotation");
+			float[] rot = { rotJSON.getFloat(0), rotJSON.getFloat(1), rotJSON.getFloat(2) };
+			float dist = thisCamState.getFloat("distance");
+			Rotation Rota = new Rotation(RotationOrder.XYZ, rot[0], rot[1], rot[2]);
+			Vector3D center = new Vector3D(pos[0], pos[1], pos[2]);
+			camStates.add(new CameraState(Rota, center, dist));
+		}
 	}
-}
 
 	private void startAnimSeq(String jsonfile) {
-	// TODO Auto-generated method stub
-		
+		// TODO Auto-generated method stub
+
 		JSONArray jsonArray = loadJSONArray(jsonfile);
-		println(jsonArray);
+		// println(jsonArray);
+		println(jsonfile + " is loaded!. ");
 		seq = new AniSequence(this);
 		seq.beginSequence();
-		
+
 		for (int i = 0; i < jsonArray.size(); i++) {
 			JSONObject thisStep = jsonArray.getJSONObject(i);
 			int dur = thisStep.getInt("duration");
 			JSONArray animationVariables = thisStep.getJSONArray("animate");
-			
+
 			String string = null;
 			for (int j = 0; j < animationVariables.size(); j++) {
-				JSONObject js =  animationVariables.getJSONObject(j);
-				if (j == 0 ) {
+				JSONObject js = animationVariables.getJSONObject(j);
+				if (j == 0) {
 					string = js.getString("variable");
 					string += ":";
 					float value = js.getFloat("to");
 					string += str(value);
-					
+
 				} else {
 					string += ",";
-					string +=  js.getString("variable");
+					string += js.getString("variable");
 					string += ":";
 					float value = js.getFloat("to");
 					string += str(value);
 				}
-				
+
 			}
-			println(string);
-			
+			// println(string);
+
 			seq.add(Ani.to(this, dur, string));
-			
+
 		}
-		
-		
-		//seq.add(Ani.to(this, 10, "octava:2,velocidad:30.0"));
+
+		// seq.add(Ani.to(this, 10, "octava:2,velocidad:30.0"));
 
 		// step 1
-		//seq.add(Ani.to(this, 10, "falloff", 2));
-		
-		seq.endSequence();
-		
-		seq.start();
-		
+		// seq.add(Ani.to(this, 10, "falloff", 2));
 
-}
+		seq.endSequence();
+
+		seq.start();
+
+	}
+
 	public void setAnimSeq() {
 
 		// create a sequence
@@ -391,55 +442,6 @@ private void importCameraAnimation(String json) {
 		}
 		nextEvent = millis() + 2000;
 		// println(r, cam.getState());
-	}
-
-	public void sendSerial() {
-		String str = "s ";
-
-		for (int i = 0; i < actors.size(); i++) {
-			if (i > 0) {
-				str += " ";// We add a comma before each value, except the first value
-			}
-			Actor thisActor = actors.get(i);
-			// float grad = int(degrees(thisActor.rot));
-			// float serRot = map(grad, 0,360, 0, 180);
-			float serRot = map(thisActor.rot, 0, 360, 0, 360);
-			// println(thisActor.rot);
-			str += (int) thisActor.rot;// We concatenate each number in the string.
-			// println(str);
-		}
-
-		while (port.available() > 0) {
-			port.write(str);
-			port.write(13);
-
-			// println(str);
-
-		}
-	}
-
-	public void serialEvent(Serial port) {
-
-		// if this is the first byte received, and it's an A,
-		// clear the serial buffer and note that you've
-		// had first contact from the microcontroller.
-		// Otherwise, read the incoming String to inBuffer:
-//
-		if (!firstContact) {
-			// read a byte from the serial port:
-			int inByte = port.read();
-			if (inByte == 'X') {
-				// port.clear(); // clear the serial port buffer
-				firstContact = true; // you've had first contact from the
-				// microcontroller
-				println("connected to : " + port);
-			}
-		} else {
-			String inBuffer = port.readString();
-			if (inBuffer != null) {
-				print(inBuffer);
-			}
-		}
 	}
 
 	public void gui() {
@@ -536,7 +538,7 @@ private void importCameraAnimation(String json) {
 
 			x = _x;
 			y = _y;
-			println("actor created at : " + x + " , " + y);
+			// println("actor created at : " + x + " , " + y);
 			posX = x * 5 + offX;
 			posY = y * 5 + offY;
 			// posY = y;
