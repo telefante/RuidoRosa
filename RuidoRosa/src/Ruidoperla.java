@@ -133,28 +133,14 @@ public class Ruidoperla extends PApplet {
 		if (GEOMETRY_ANIM) {
 			startAnimSeq("animSeqSteps.json");
 		}
-		
-		
+
 		velX = 0.1f;
 		velY = 0.2f;
 		resX = w / scl;
 		resY = h / scl;
 		altitud = new float[resX][resY];
 
-		// Setup Actors
-		int index = 0;
-		for (int y = 0; y < resY - 1; y++) {
-			// for every single row
-			for (int x = 0; x < resX; x++) {
-				if ((x % 40 == 0) && (y % 30 == 0)) {
-					float offY = 200;
-					float offX = width * 0.3f;
-					actors.add(new Actor(x, y, offX, offY, index));
-					index++;
-				}
-			}
-		}
-		println("size of actors Array: " + actors.size());
+		initActors(resY - 1);
 
 		// List all the available serial ports, preceded by their index number:
 		printArray(Serial.list());
@@ -180,6 +166,23 @@ public class Ruidoperla extends PApplet {
 		grad.primeAnimation();
 		grad.setInterpolationMode(Interpolation.SMOOTH_STEP);
 	}
+
+	public void initActors(int total) {
+		// Setup Actors
+		int index = 0;
+		for (int y = 0; y < total; y++) {
+			// for every single row
+			for (int x = 0; x < resX; x++) {
+				if ((x % 40 == 0) && (y % 30 == 0)) {
+					float offY = 200;
+					float offX = width * 0.3f;
+					actors.add(new Actor(x, y, offX, offY, index));
+					index++;
+				}
+			}
+		}
+		println("size of actors Array: " + actors.size());
+	}
 //// SETUP ------------------------------
 /// - - - - - - - - - - - - - - - - - - -
 
@@ -191,7 +194,7 @@ public class Ruidoperla extends PApplet {
 		// Otherwise, read the incoming String to inBuffer:
 		//
 
-	//	port.bufferUntil(10);
+		// port.bufferUntil(10);
 		if (!firstContact) {
 			// read a byte from the serial port:
 			int inByte = port.read();
@@ -210,19 +213,18 @@ public class Ruidoperla extends PApplet {
 		}
 	}
 
-	public void sendSerial() {
+	public void sendRotationFromActorsOverSerial() {
 		String str = "s ";
 
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < actors.size(); i++) {
 			if (i > 0) {
 				str += " ";// We add a comma before each value, except the first value
 			}
 			Actor thisActor = actors.get(i);
-			// float grad = int(degrees(thisActor.rot));
-			// float serRot = map(grad, 0,360, 0, 180);
-			float serRot = map(thisActor.rot, 0, 360, 0, 360);
+			
+			int RotationToSerial = (int) map(thisActor.rot, 0, 180, 0, 180);
 			// println(thisActor.rot);
-			str += (int) thisActor.rot;// We concatenate each number in the string.
+			str += str(RotationToSerial);// We concatenate each number in the string.
 			// println(str);
 		}
 
@@ -309,9 +311,9 @@ public class Ruidoperla extends PApplet {
 		cam.endHUD();
 		hint(ENABLE_DEPTH_TEST);
 
-		if (firstContact) {
+		if (firstContact && !actors.isEmpty()) {
 			// if (port.available() > 0){
-			sendSerial();
+			sendRotationFromActorsOverSerial();
 			// }
 		}
 
@@ -528,6 +530,7 @@ public class Ruidoperla extends PApplet {
 		int x, y;
 		boolean active;
 		float rot, rotVel, rotAim;
+		float rotRadians; 
 		int index;
 		float slide;
 		// float value;
@@ -544,20 +547,29 @@ public class Ruidoperla extends PApplet {
 			// posY = y;
 			index = i;
 			rot = 0;
-			rotAim = rot;
-			rotVel = random(0.01f, 0.05f);
-			slide = .03f;
+			//rotAim = rot;
+			//rotVel = random(0.01f, 0.05f);
+			//slide = .03f;
 		}
 
 		public void update() {
 
 			// rotAim =
-			float diff = abs(rotAim - rot);
+	//		float diff = abs(rot - rotAim);
 
-			rot += diff * slide;
+			//rot += diff * slide;
 			// rot += rotVel;
 			// value = map(altitud[x][y], -100, 100, 0, 1.0);
-			rot = map(altitud[x][y], -100, 100, 0, 360);
+			float value = map(altitud[x][y]*8, -amplitud, amplitud, 0, 180);
+			if (value > 180 ) {
+				value = 180;
+			} else if ( value < 0) {
+				value = 0;
+			}
+			rot = value;
+			
+			//rotRadians = norm(altitud[x][y]*4, -amplitud, amplitud);
+		
 			// port.write(int(rot)); // Write the angle to the serial port
 			// println(rot);
 		}
@@ -571,19 +583,20 @@ public class Ruidoperla extends PApplet {
 		}
 
 		void render() {
-			noFill();
+//			noFill();
+			fill(30, 255, 235);
 			pushMatrix();
 			translate(posX, posY);
 
-			// translate(0,-50);
-			// float v = map(altitud[x][y], -100, 100, 0, 360);
-			// text(v, 0,50);
-			text(rot, 0, 50);
-			ellipseMode(CENTER);
-			ellipse(0, 0, 15, 15);
+			// Monitor the rotation VALUE
+			text(nf(rot,0,1), 0, 50);
+			//ellipseMode(CENTER);
+			// ellipse(0, 0, 15, 15);
 			rectMode(CENTER);
 			stroke(255);
 			rotateZ(radians(rot));
+			//rotateZ(rotRadians);
+			
 			rect(0, 0, 100, 5);
 			popMatrix();
 			textSize(38);
