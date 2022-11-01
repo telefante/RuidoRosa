@@ -101,13 +101,69 @@ public class Ruidoperla extends PApplet {
 	float offset = 0;
 	float velocidad = 0.0f;
 
+	String[] texts;
+
+	Texts textModul;
+
 	// method used only for setting the size of the window
 	public void settings() {
 		size(1280, 720, OPENGL);
 	}
 
+	class Texts {
+		String[] lines;
+		float x, y;
+		PFont f;
+		int actualIndex;
+		float fadeIn, fadeOut;
+		float sustain;
+		float alpha;
+		Ani fadingAni;
+
+		Texts(String file) {
+			x = width * 0.5f;
+			y = height * 0.5f;
+			f = createFont("SourceCodePro-Regular.ttf", 114);
+
+			lines = loadFile(file);
+			actualIndex = 0;
+			fadeOut = 2.f;
+			fadeIn = 8.f;
+			alpha = 0.f;
+
+			fadingAni = new Ani(this, fadeIn, "alpha", 255.f);
+
+		}
+
+		public void showThisLine(int index) {
+
+		}
+
+		public void render() {
+			pushMatrix();
+			translate(x, y);
+			textFont(f);
+			fill(255, alpha);
+			textAlign(CENTER);
+			text(lines[actualIndex], 0, 0);
+			popMatrix();
+			println(alpha);
+		}
+
+		public String[] loadFile(String txt) {
+			String[] lines = loadStrings(txt);
+			println("text loaded with" + lines.length + " lines");
+			return lines;
+		}
+
+	}
+
 	@Override
 	public void setup() {
+
+		// texts = loadText("pearlinnoise.txt");
+		Ani.init(this);
+		textModul = new Texts("pearlinnoise.txt");
 
 		fx = new PostFX(this);
 
@@ -125,9 +181,6 @@ public class Ruidoperla extends PApplet {
 
 		// visualiza los GUI y actores
 		armarGUI();
-
-		// Set ANim Seq
-		Ani.init(this);
 
 		// setAnimSeq();
 		if (GEOMETRY_ANIM) {
@@ -221,7 +274,7 @@ public class Ruidoperla extends PApplet {
 				str += " ";// We add a comma before each value, except the first value
 			}
 			Actor thisActor = actors.get(i);
-			
+
 			int RotationToSerial = (int) map(thisActor.rot, 0, 180, 0, 180);
 			// println(thisActor.rot);
 			str += str(RotationToSerial);// We concatenate each number in the string.
@@ -303,11 +356,13 @@ public class Ruidoperla extends PApplet {
 		hint(DISABLE_DEPTH_TEST);
 		cam.beginHUD();
 		fill(255, 255, 0);
-		textFont(f);
-		textAlign(CENTER);
-		if (TEXT) {
-			text("contemplate", width / 2, height / 2);
-		}
+		/*
+		 * textFont(f); textAlign(CENTER); if (TEXT) { text("contemplate", width / 2,
+		 * height / 2); }
+		 */
+
+		textModul.render();
+
 		cam.endHUD();
 		hint(ENABLE_DEPTH_TEST);
 
@@ -530,7 +585,7 @@ public class Ruidoperla extends PApplet {
 		int x, y;
 		boolean active;
 		float rot, rotVel, rotAim;
-		float rotRadians; 
+		float rotRadians;
 		int index;
 		float slide;
 		// float value;
@@ -547,29 +602,29 @@ public class Ruidoperla extends PApplet {
 			// posY = y;
 			index = i;
 			rot = 0;
-			//rotAim = rot;
-			//rotVel = random(0.01f, 0.05f);
-			//slide = .03f;
+			// rotAim = rot;
+			// rotVel = random(0.01f, 0.05f);
+			// slide = .03f;
 		}
 
 		public void update() {
 
 			// rotAim =
-	//		float diff = abs(rot - rotAim);
+			// float diff = abs(rot - rotAim);
 
-			//rot += diff * slide;
+			// rot += diff * slide;
 			// rot += rotVel;
 			// value = map(altitud[x][y], -100, 100, 0, 1.0);
-			float value = map(altitud[x][y]*8, -amplitud, amplitud, 0, 180);
-			if (value > 180 ) {
+			float value = map(altitud[x][y] * 8, -amplitud, amplitud, 0, 180);
+			if (value > 180) {
 				value = 180;
-			} else if ( value < 0) {
+			} else if (value < 0) {
 				value = 0;
 			}
 			rot = value;
-			
-			//rotRadians = norm(altitud[x][y]*4, -amplitud, amplitud);
-		
+
+			// rotRadians = norm(altitud[x][y]*4, -amplitud, amplitud);
+
 			// port.write(int(rot)); // Write the angle to the serial port
 			// println(rot);
 		}
@@ -589,14 +644,14 @@ public class Ruidoperla extends PApplet {
 			translate(posX, posY);
 
 			// Monitor the rotation VALUE
-			text(nf(rot,0,1), 0, 50);
-			//ellipseMode(CENTER);
+			text(nf(rot, 0, 1), 0, 50);
+			// ellipseMode(CENTER);
 			// ellipse(0, 0, 15, 15);
 			rectMode(CENTER);
 			stroke(255);
 			rotateZ(radians(rot));
-			//rotateZ(rotRadians);
-			
+			// rotateZ(rotRadians);
+
 			rect(0, 0, 100, 5);
 			popMatrix();
 			textSize(38);
