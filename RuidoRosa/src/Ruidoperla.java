@@ -115,10 +115,11 @@ public class Ruidoperla extends PApplet {
 		float x, y;
 		PFont f;
 		int actualIndex;
-		float fadeIn, fadeOut;
+		float fadeIn, fadeOut, firstDelay;
 		float sustain;
 		float alpha;
 		Ani fadingAni;
+		int fontsize;
 
 		Texts(String file) {
 			x = width * 0.5f;
@@ -130,41 +131,42 @@ public class Ruidoperla extends PApplet {
 			fadeOut = 2.0f;
 			fadeIn = 3.f;
 			alpha = 0.f;
-			sustain = 7.f;
-
-		//	Ani.to(this, fadeIn, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
-			fadingAni = new Ani(this, fadeIn, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
+//			sustain = 7.f;
+// sustain depends on leght onf line 
+			sustain = lines[actualIndex].length() / 2;
+			firstDelay = 20.f;
+			// Ani.to(this, fadeIn, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
+			fadingAni = new Ani(this, fadeIn, firstDelay, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
+			fontsize = (int) (height * 0.07f);
 
 		}
 
 		void fadeOutAfter() {
-			println("fadeOut");
-			Ani.to(this, fadeOut, "alpha", sustain, Ani.EXPO_IN_OUT, "onEnd:nextLine");
+			// println("fadeOut");
+			Ani.to(this, fadeOut, 0, "alpha", sustain, Ani.EXPO_IN_OUT, "onEnd:nextLine");
 		}
 
 		public void nextLine() {
-			println("nextLine");
+			// println("nextLine");
 			actualIndex++;
-			if (actualIndex > lines.length) {
+			if (actualIndex >= lines.length) {
 				actualIndex = 0;
 			}
-			Ani.to(this, fadeIn, "alpha", 1000, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
-
-		}
-
-		public void showThisLine(int index) {
+			sustain = lines[actualIndex].length() / 1.5f;
+			// println("sustain: " + sustain);
+			Ani.to(this, fadeIn, 2.f, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
 
 		}
 
 		public void render() {
 			pushMatrix();
 			translate(x, y);
-			textFont(f);
+			textFont(f, fontsize);
 			fill(255, alpha);
 			textAlign(CENTER);
 			text(lines[actualIndex], 0, 0);
 			popMatrix();
-			//println(alpha);
+			// println(alpha);
 		}
 
 		public String[] loadFile(String txt) {
@@ -372,14 +374,14 @@ public class Ruidoperla extends PApplet {
 
 		hint(DISABLE_DEPTH_TEST);
 		cam.beginHUD();
-		fill(255, 255, 0);
+
 		/*
 		 * textFont(f); textAlign(CENTER); if (TEXT) { text("contemplate", width / 2,
 		 * height / 2); }
 		 */
-
-		textModul.render();
-
+		if (TEXT) {
+			textModul.render();
+		}
 		cam.endHUD();
 		hint(ENABLE_DEPTH_TEST);
 
