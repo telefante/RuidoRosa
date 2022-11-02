@@ -118,11 +118,20 @@ public class Ruidoperla extends PApplet {
 	class Speech {
 		
 		SoundFile file;
-		
+		BeatDetector beatDetector;
+
 		Speech(PApplet p, String filename ){
 			file = new SoundFile(p, filename);
-			file.play();
-			
+			//file.play();
+			file.loop();
+			beatDetector = new BeatDetector(p);
+			beatDetector.input(file);
+			 beatDetector.sensitivity(255);
+		}
+		
+		public boolean detectBeat() {
+			boolean beat = beatDetector.isBeat();
+			return beat;
 		}
 		
 		
@@ -331,6 +340,17 @@ public class Ruidoperla extends PApplet {
 
 	@Override
 	public void draw() {
+		
+		if (speech.detectBeat()) {
+			velocidad = 0;
+			octava = 8;
+			println("beat");
+		} else {
+			velocidad = 10;
+			octava = 2;
+			
+		}
+		
 		// background(BG_CLR);
 		// peasyGradients.linearGradient(grad, 45); // angle = 0 (horizontal)
 		peasyGradients.spiralGradient(grad, new PVector(width / 2, height / 2), (float) (frameCount * 0.02), 3);
