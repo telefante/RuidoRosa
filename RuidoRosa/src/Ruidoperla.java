@@ -24,6 +24,9 @@ import processing.data.JSONArray;
 import processing.data.JSONObject;
 import processing.opengl.*;
 
+import processing.sound.*;
+
+
 //ARDUINO SEriaL
 import processing.serial.*;
 
@@ -104,12 +107,28 @@ public class Ruidoperla extends PApplet {
 	String[] texts;
 
 	Texts textModul;
+	Speech speech;
 
 	// method used only for setting the size of the window
 	public void settings() {
 		size(1280, 720, OPENGL);
 	}
 
+	
+	class Speech {
+		
+		SoundFile file;
+		
+		Speech(PApplet p, String filename ){
+			file = new SoundFile(p, filename);
+			file.play();
+			
+		}
+		
+		
+		
+		
+	}
 	class Texts {
 		String[] lines;
 		float x, y;
@@ -183,6 +202,7 @@ public class Ruidoperla extends PApplet {
 		// texts = loadText("pearlinnoise.txt");
 		Ani.init(this);
 		textModul = new Texts("pearlinnoise.txt");
+		speech = new Speech(this, "hey.wav");
 
 		fx = new PostFX(this);
 

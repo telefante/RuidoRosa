@@ -12,5 +12,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Processing3"/>
 	<classpathentry kind="lib" path="/Applications/Processing 3.app/Contents/Java/modes/java/libraries/serial/library/serial.jar"/>
 	<classpathentry kind="lib" path="/Applications/Processing 3.app/Contents/Java/modes/java/libraries/serial/library/jssc.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/sound"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
