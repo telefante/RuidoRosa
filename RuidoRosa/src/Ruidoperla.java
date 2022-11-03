@@ -36,6 +36,15 @@ public class Ruidoperla extends PApplet {
 		PApplet.main("Ruidoperla");
 	}
 
+	
+	// STATES 
+	
+	public static final int NOISE  = 0;
+	public static final int SILENCE  = 1;
+	
+	//int[] states = { NOISE, SILENCE };
+	int actualSTATE = SILENCE;
+	
 // GR
 	PeasyGradients peasyGradients;
 	Gradient grad;
@@ -115,128 +124,6 @@ public class Ruidoperla extends PApplet {
 	}
 
 	
-	class Speech {
-		
-		SoundFile file;
-		BeatDetector beatDetector;
-		Amplitude rms;
-		
-		// Declare a smooth factor to smooth out sudden changes in amplitude.
-		// With a smooth factor of 1, only the last measured amplitude is used for the
-		// visualisation, which can lead to very abrupt changes. As you decrease the
-		// smooth factor towards 0, the measured amplitudes are averaged across frames,
-		// leading to more pleasant gradual changes
-		float smoothingFactor = 0.25f;
-
-		// Used for storing the smoothed amplitude value
-		float sum;
-
-
-		Speech(PApplet p, String filename ){
-			file = new SoundFile(p, filename);
-			//file.play();
-			file.loop();
-			beatDetector = new BeatDetector(p);
-			beatDetector.input(file);
-			 beatDetector.sensitivity(255);
-			 
-			 // PeakAmpltude 
-			  // Create and patch the rms tracker
-			  rms = new Amplitude(p);
-			  rms.input(file);
-		}
-		
-		public boolean detectBeat() {
-			boolean beat = beatDetector.isBeat();
-			return beat;
-		}
-		
-		public float peakAmplitude() {
-			  // smooth the rms data by smoothing factor
-			  sum += (rms.analyze() - sum) * smoothingFactor;
-			  return sum;
-		}
-		
-		
-		public void play() {
-			if ( !file.isPlaying()) file.play();
-		}
-		
-		public void resume() {
-			file.jump(0);
-		}
-		
-		
-		
-		
-	}
-	class Texts {
-		String[] lines;
-		float x, y;
-		PFont f;
-		int actualIndex;
-		float fadeIn, fadeOut, firstDelay;
-		float sustain;
-		float alpha;
-		Ani fadingAni;
-		int fontsize;
-
-		Texts(String file) {
-			x = width * 0.5f;
-			y = height * 0.5f;
-			f = createFont("SourceCodePro-Regular.ttf", 114);
-
-			lines = loadFile(file);
-			actualIndex = 0;
-			fadeOut = 2.0f;
-			fadeIn = 3.f;
-			alpha = 0.f;
-//			sustain = 7.f;
-// sustain depends on leght onf line 
-			sustain = lines[actualIndex].length() / 2;
-			firstDelay = 20.f;
-			// Ani.to(this, fadeIn, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
-			fadingAni = new Ani(this, fadeIn, firstDelay, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
-			fontsize = (int) (height * 0.07f);
-
-		}
-
-		void fadeOutAfter() {
-			// println("fadeOut");
-			Ani.to(this, fadeOut, 0, "alpha", sustain, Ani.EXPO_IN_OUT, "onEnd:nextLine");
-		}
-
-		public void nextLine() {
-			// println("nextLine");
-			actualIndex++;
-			if (actualIndex >= lines.length) {
-				actualIndex = 0;
-			}
-			sustain = lines[actualIndex].length() / 1.5f;
-			// println("sustain: " + sustain);
-			Ani.to(this, fadeIn, 2.f, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
-
-		}
-
-		public void render() {
-			pushMatrix();
-			translate(x, y);
-			textFont(f, fontsize);
-			fill(255, alpha);
-			textAlign(CENTER);
-			text(lines[actualIndex], 0, 0);
-			popMatrix();
-			// println(alpha);
-		}
-
-		public String[] loadFile(String txt) {
-			String[] lines = loadStrings(txt);
-			println("text loaded with" + lines.length + " lines");
-			return lines;
-		}
-
-	}
-
 	@Override
 	public void setup() {
 
@@ -299,6 +186,231 @@ public class Ruidoperla extends PApplet {
 		grad.primeAnimation();
 		grad.setInterpolationMode(Interpolation.SMOOTH_STEP);
 	}
+
+	@Override
+	public void draw() {
+		
+		if (speech.detectBeat()) {
+			velocidad = 0;
+			octava = 8;
+			println("beat");
+		} else {
+			velocidad = 10;
+			octava = 2;
+			
+		}
+		
+		// background(BG_CLR);
+		// peasyGradients.linearGradient(grad, 45); // angle = 0 (horizontal)
+		peasyGradients.spiralGradient(grad, new PVector(width / 2, height / 2), (float) (frameCount * 0.02), 3);
+	
+		// peasyGradients.noiseGradient(grad, new PVector(width*0.5,height*0.5),45,1.0);
+		// // angle = 0 (horizontal)
+	
+		lights();
+		noiseDetail(octava, falloff);
+		offset -= velocidad / 1000;
+		float yoff = offset;
+		for (int y = 0; y < resY; y++) {
+			float xoff = 0;
+			for (int x = 0; x < resX; x++) {
+				// altitud[x][y] = random(-10, 10);
+				altitud[x][y] = map(noise(xoff, yoff), 0.f, 1.f, -amplitud, amplitud);
+				xoff += velX;
+			}
+			yoff += velY;
+		}
+	
+		// setGradient(0, 0, width, height, c1, c2, Y_AXIS);
+		stroke(LINE_CLR);
+		// noFill();
+		fill(200, 100);
+		// fill(255, 255,255, 200);
+		translate(width / 2, height / 2);
+		rotateX(PI / 3);
+		translate(-w / 2, -h / 2);
+		for (int y = 0; y < resY - 1; y++) {
+			// for everysingle row
+			// beginShape(TRIANGLE_STRIP);
+	
+			beginShape(QUAD_STRIP);
+			for (int x = 0; x < resX; x++) {
+				vertex(x * scl, y * scl, altitud[x][y]);
+				vertex(x * scl, (y + 1) * scl, altitud[x][y + 1]);
+				// DISPLAY TEXT -
+				float v = map(altitud[x][y], -amplitud, amplitud, 0.f, 1.f);
+				if ((x % 40 == 0) && (y % 30 == 0)) {
+					if (TEXT)
+						text(v, x * scl, y * scl, altitud[x][y] + 10);
+				}
+			}
+			endShape();
+		}
+		// only for TEXT -
+		textSize(48);
+		fill(255);
+	
+		fx.render().blur(2, 2.0f)
+				// .chromaticAberration()
+				// .vignette(1.0,0.5)
+				.compose();
+	
+		if (GUI) {
+			gui();
+		}
+	
+		//// LETTER on TOP
+	
+		hint(DISABLE_DEPTH_TEST);
+		cam.beginHUD();
+	
+		/*
+		 * textFont(f); textAlign(CENTER); if (TEXT) { text("contemplate", width / 2,
+		 * height / 2); }
+		 */
+		if (TEXT) {
+			textModul.render();
+		}
+		cam.endHUD();
+		hint(ENABLE_DEPTH_TEST);
+	
+		if (firstContact && !actors.isEmpty()) {
+			// if (port.available() > 0){
+			sendRotationFromActorsOverSerial();
+			// }
+		}
+	
+		// CAM ANIMATIONS
+		if (CAM_ANIM) {
+			if (millis() >= nextEvent) {
+				// randomCameraMove();
+				animateCamera();
+			}
+		}
+	}
+
+	class Speech {
+		
+		SoundFile file;
+		BeatDetector beatDetector;
+		Amplitude rms;
+		
+		// Declare a smooth factor to smooth out sudden changes in amplitude.
+		// With a smooth factor of 1, only the last measured amplitude is used for the
+		// visualisation, which can lead to very abrupt changes. As you decrease the
+		// smooth factor towards 0, the measured amplitudes are averaged across frames,
+		// leading to more pleasant gradual changes
+		float smoothingFactor = 0.25f;
+	
+		// Used for storing the smoothed amplitude value
+		float sum;
+	
+	
+		Speech(PApplet p, String filename ){
+			file = new SoundFile(p, filename);
+			//file.play();
+			file.loop();
+			beatDetector = new BeatDetector(p);
+			beatDetector.input(file);
+			 beatDetector.sensitivity(255);
+			 
+			 // PeakAmpltude 
+			  // Create and patch the rms tracker
+			  rms = new Amplitude(p);
+			  rms.input(file);
+		}
+		
+		public boolean detectBeat() {
+			boolean beat = beatDetector.isBeat();
+			return beat;
+		}
+		
+		public float peakAmplitude() {
+			  // smooth the rms data by smoothing factor
+			  sum += (rms.analyze() - sum) * smoothingFactor;
+			  return sum;
+		}
+		
+		
+		public void play() {
+			if ( !file.isPlaying()) file.play();
+		}
+		
+		public void resume() {
+			file.jump(0);
+		}
+		
+		
+		
+		
+	}
+
+	class Texts {
+			String[] lines;
+			float x, y;
+			PFont f;
+			int actualIndex;
+			float fadeIn, fadeOut, firstDelay;
+			float sustain;
+			float alpha;
+			Ani fadingAni;
+			int fontsize;
+	
+			Texts(String file) {
+				x = width * 0.5f;
+				y = height * 0.5f;
+				f = createFont("SourceCodePro-Regular.ttf", 114);
+	
+				lines = loadFile(file);
+				actualIndex = 0;
+				fadeOut = 2.0f;
+				fadeIn = 3.f;
+				alpha = 0.f;
+	//			sustain = 7.f;
+	// sustain depends on leght onf line 
+				sustain = lines[actualIndex].length() / 2;
+				firstDelay = 20.f;
+				// Ani.to(this, fadeIn, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
+				fadingAni = new Ani(this, fadeIn, firstDelay, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
+				fontsize = (int) (height * 0.07f);
+	
+			}
+	
+			void fadeOutAfter() {
+				// println("fadeOut");
+				Ani.to(this, fadeOut, 0, "alpha", sustain, Ani.EXPO_IN_OUT, "onEnd:nextLine");
+			}
+	
+			public void nextLine() {
+				// println("nextLine");
+				actualIndex++;
+				if (actualIndex >= lines.length) {
+					actualIndex = 0;
+				}
+				sustain = lines[actualIndex].length() / 1.5f;
+				// println("sustain: " + sustain);
+				Ani.to(this, fadeIn, 2.f, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
+	
+			}
+	
+			public void render() {
+				pushMatrix();
+				translate(x, y);
+				textFont(f, fontsize);
+				fill(255, alpha);
+				textAlign(CENTER);
+				text(lines[actualIndex], 0, 0);
+				popMatrix();
+				// println(alpha);
+			}
+	
+			public String[] loadFile(String txt) {
+				String[] lines = loadStrings(txt);
+				println("text loaded with" + lines.length + " lines");
+				return lines;
+			}
+	
+		}
 
 	public void initActors(int total) {
 		// Setup Actors
@@ -368,108 +480,6 @@ public class Ruidoperla extends PApplet {
 		// println(str);
 
 //		}
-	}
-
-	@Override
-	public void draw() {
-		
-		if (speech.detectBeat()) {
-			velocidad = 0;
-			octava = 8;
-			println("beat");
-		} else {
-			velocidad = 10;
-			octava = 2;
-			
-		}
-		
-		// background(BG_CLR);
-		// peasyGradients.linearGradient(grad, 45); // angle = 0 (horizontal)
-		peasyGradients.spiralGradient(grad, new PVector(width / 2, height / 2), (float) (frameCount * 0.02), 3);
-
-		// peasyGradients.noiseGradient(grad, new PVector(width*0.5,height*0.5),45,1.0);
-		// // angle = 0 (horizontal)
-
-		lights();
-		noiseDetail(octava, falloff);
-		offset -= velocidad / 1000;
-		float yoff = offset;
-		for (int y = 0; y < resY; y++) {
-			float xoff = 0;
-			for (int x = 0; x < resX; x++) {
-				// altitud[x][y] = random(-10, 10);
-				altitud[x][y] = map(noise(xoff, yoff), 0.f, 1.f, -amplitud, amplitud);
-				xoff += velX;
-			}
-			yoff += velY;
-		}
-
-		// setGradient(0, 0, width, height, c1, c2, Y_AXIS);
-		stroke(LINE_CLR);
-		// noFill();
-		fill(200, 100);
-		// fill(255, 255,255, 200);
-		translate(width / 2, height / 2);
-		rotateX(PI / 3);
-		translate(-w / 2, -h / 2);
-		for (int y = 0; y < resY - 1; y++) {
-			// for everysingle row
-			// beginShape(TRIANGLE_STRIP);
-
-			beginShape(QUAD_STRIP);
-			for (int x = 0; x < resX; x++) {
-				vertex(x * scl, y * scl, altitud[x][y]);
-				vertex(x * scl, (y + 1) * scl, altitud[x][y + 1]);
-				// DISPLAY TEXT -
-				float v = map(altitud[x][y], -amplitud, amplitud, 0.f, 1.f);
-				if ((x % 40 == 0) && (y % 30 == 0)) {
-					if (TEXT)
-						text(v, x * scl, y * scl, altitud[x][y] + 10);
-				}
-			}
-			endShape();
-		}
-		// only for TEXT -
-		textSize(48);
-		fill(255);
-
-		fx.render().blur(2, 2.0f)
-				// .chromaticAberration()
-				// .vignette(1.0,0.5)
-				.compose();
-
-		if (GUI) {
-			gui();
-		}
-
-		//// LETTER on TOP
-
-		hint(DISABLE_DEPTH_TEST);
-		cam.beginHUD();
-
-		/*
-		 * textFont(f); textAlign(CENTER); if (TEXT) { text("contemplate", width / 2,
-		 * height / 2); }
-		 */
-		if (TEXT) {
-			textModul.render();
-		}
-		cam.endHUD();
-		hint(ENABLE_DEPTH_TEST);
-
-		if (firstContact && !actors.isEmpty()) {
-			// if (port.available() > 0){
-			sendRotationFromActorsOverSerial();
-			// }
-		}
-
-		// CAM ANIMATIONS
-		if (CAM_ANIM) {
-			if (millis() >= nextEvent) {
-				// randomCameraMove();
-				animateCamera();
-			}
-		}
 	}
 
 	private void importCameraAnimation(String json) {
