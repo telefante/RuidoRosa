@@ -119,6 +119,18 @@ public class Ruidoperla extends PApplet {
 		
 		SoundFile file;
 		BeatDetector beatDetector;
+		Amplitude rms;
+		
+		// Declare a smooth factor to smooth out sudden changes in amplitude.
+		// With a smooth factor of 1, only the last measured amplitude is used for the
+		// visualisation, which can lead to very abrupt changes. As you decrease the
+		// smooth factor towards 0, the measured amplitudes are averaged across frames,
+		// leading to more pleasant gradual changes
+		float smoothingFactor = 0.25f;
+
+		// Used for storing the smoothed amplitude value
+		float sum;
+
 
 		Speech(PApplet p, String filename ){
 			file = new SoundFile(p, filename);
@@ -127,11 +139,31 @@ public class Ruidoperla extends PApplet {
 			beatDetector = new BeatDetector(p);
 			beatDetector.input(file);
 			 beatDetector.sensitivity(255);
+			 
+			 // PeakAmpltude 
+			  // Create and patch the rms tracker
+			  rms = new Amplitude(p);
+			  rms.input(file);
 		}
 		
 		public boolean detectBeat() {
 			boolean beat = beatDetector.isBeat();
 			return beat;
+		}
+		
+		public float peakAmplitude() {
+			  // smooth the rms data by smoothing factor
+			  sum += (rms.analyze() - sum) * smoothingFactor;
+			  return sum;
+		}
+		
+		
+		public void play() {
+			if ( !file.isPlaying()) file.play();
+		}
+		
+		public void resume() {
+			file.jump(0);
 		}
 		
 		
