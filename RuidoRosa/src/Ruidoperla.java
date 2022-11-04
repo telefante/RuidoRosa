@@ -124,16 +124,13 @@ public class Ruidoperla extends PApplet {
 	@Override
 	public void setup() {
 
-		
-		
 		// texts = loadText("pearlinnoise.txt");
 		Ani.init(this);
 		textModul = new Texts("pearlinnoise.txt");
 		speech = new Speech(this, "hey.wav");
 
-		
 		setState(SILENCE);
-		
+
 		fx = new PostFX(this);
 
 		frameRate(25);
@@ -188,7 +185,7 @@ public class Ruidoperla extends PApplet {
 		gradient.primeAnimation();
 		gradient.setInterpolationMode(Interpolation.SMOOTH_STEP);
 	}
-	
+
 	@Override
 	public void draw() {
 
@@ -199,22 +196,31 @@ public class Ruidoperla extends PApplet {
 		 * }
 		 */
 
+//		if (!speech.active) {
+//			setState(NOISE);
+//			
+//		}
+		
 		switch (actualSTATE) {
 		case NOISE:
-			//println("back to NOISE");
+			// println("back to NOISE");
 			break;
 
 		case SILENCE:
-			
-//			if (speech.detectBeat()) {
-//				velocidad = 0;
+
+			if (speech.detectBeat()) {
+				//velocidad = 0;
 //				octava = 8;
-//				println("beat");
-//				
-//				// poner en pausa audio - activar motor de pan&tilt 
-//
-//			}
-			//speech.play();
+				println("MOVE ROBOT");
+				// poner en pausa audio - activar motor de pan&tilt 
+
+			}
+			
+			if(!speech.isPlaying()) {
+				setState(NOISE);
+				speech.parar();
+			}
+			// speech.play();
 
 			break;
 
@@ -313,20 +319,20 @@ public class Ruidoperla extends PApplet {
 	}
 
 	public void setState(int state) {
-		 actualSTATE = state;
-		
+		actualSTATE = state;
+
 		switch (actualSTATE) {
 		case NOISE:
 			println("state switched to NOISE");
-			
+			speech.parar();
 			break;
-			
+
 		case SILENCE:
-			
+
 			speech.play();
 			println("state switched to SILENCE");
 			break;
-	
+
 		default:
 			break;
 		}
@@ -337,6 +343,7 @@ public class Ruidoperla extends PApplet {
 		SoundFile file;
 		BeatDetector beatDetector;
 		Amplitude rms;
+		boolean active;
 
 		// Declare a smooth factor to smooth out sudden changes in amplitude.
 		// With a smooth factor of 1, only the last measured amplitude is used for the
@@ -353,7 +360,7 @@ public class Ruidoperla extends PApplet {
 			file = new SoundFile(p, filename);
 			filestring = filename;
 			// file.play();
-			//file.loop();
+			// file.loop();
 			file.stop();
 			beatDetector = new BeatDetector(p);
 			beatDetector.input(file);
@@ -363,6 +370,7 @@ public class Ruidoperla extends PApplet {
 			// Create and patch the rms tracker
 			rms = new Amplitude(p);
 			rms.input(file);
+			active = false;
 		}
 
 		public boolean detectBeat() {
@@ -379,7 +387,8 @@ public class Ruidoperla extends PApplet {
 		public void play() {
 			if (!file.isPlaying())
 				println("play" + filestring);
-				file.play();
+			file.play();
+			active = true;
 		}
 
 		public void comienzo() {
@@ -389,7 +398,20 @@ public class Ruidoperla extends PApplet {
 		public void pausa() {
 			file.pause();
 		}
-		
+
+		public void parar() {
+			file.stop();
+			active = false;
+		}
+
+		public boolean isPlaying() {
+			boolean p = file.isPlaying();
+			if (!p) {
+				active = false;
+			}
+			return p;
+		}
+
 	}
 
 	class Texts {
