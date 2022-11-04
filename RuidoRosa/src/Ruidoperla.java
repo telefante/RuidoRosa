@@ -348,30 +348,38 @@ public class Ruidoperla extends PApplet {
 		int clr2 = color(071, 244, 218);
 		int clr3 = color(11, 167, 228);
 		int clr4 = color(238, 85, 23);
-		int[] tetadric;
+		int[] tetadric, complementery;
 
 		public GradientBackground(PApplet p) {
 			peasyGradients = new PeasyGradients(p);
 			// grad = new Gradient(color(255,120,170), color(252,245,140));
 			// grad = new Gradient(color(255,100,100), color(252,245,140));
-			tetadric = Palette.tetradic();
-			gradient = new Gradient(tetadric[0],tetadric[1],tetadric[2],tetadric[3]);
-			
+			tetadricColors();
+//			complementeryColors();
 //			gradient = new Gradient(clr1, clr2, clr3, clr4);
-			randomColors();
+			randomColors(4);
 			gradient.primeAnimation();
 			gradient.setInterpolationMode(Interpolation.SMOOTH_STEP);
 		}
 
-		public void randomColors() {
-			gradient = Gradient.randomGradient(12);
+		public void randomColors(int howmanyColors) {
+			gradient = Gradient.randomGradient(howmanyColors);
 //			= Palette.complementary();
 
 		}
 		
+		public void complementeryColors() {
+			complementery = Palette.complementary();
+			gradient = new Gradient(complementery[0],complementery[1]);
+			gradient.primeAnimation();
+		}
+		
+		
+		
 		public void tetadricColors() {
 			tetadric = Palette.tetradic();
 			gradient = new Gradient(tetadric[0],tetadric[1],tetadric[2],tetadric[3]);
+			gradient.primeAnimation();
 		}
 
 		public void draw() {
@@ -791,7 +799,8 @@ public class Ruidoperla extends PApplet {
 			GUI = !GUI;
 
 		if (key == 'g')
-			bg.randomColors();
+//			bg.randomColors(36);
+			bg.tetadricColors();
 	}
 
 	class Actor {
