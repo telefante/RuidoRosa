@@ -9,6 +9,9 @@ import de.looksgood.ani.Ani;
 import de.looksgood.ani.AniSequence;
 import micycle.peasygradients.PeasyGradients;
 import micycle.peasygradients.gradient.Gradient;
+//import micycle.peasygradients.gradient.Palette;
+import micycle.peasygradients.gradient.*;
+
 import micycle.peasygradients.utilities.Interpolation;
 import peasy.CameraState;
 import peasy.PeasyCam;
@@ -42,10 +45,6 @@ public class Ruidoperla extends PApplet {
 
 	// int[] states = { NOISE, SILENCE };
 	int actualSTATE;
-
-// GR
-	PeasyGradients peasyGradients;
-	Gradient gradient;
 
 // UI
 	ControlP5 cp5;
@@ -112,6 +111,7 @@ public class Ruidoperla extends PApplet {
 	float velocidad = 0.0f;
 
 	String[] texts;
+	GradientBackground bg;
 
 	Texts textModul;
 	Speech speech;
@@ -126,10 +126,19 @@ public class Ruidoperla extends PApplet {
 
 		// texts = loadText("pearlinnoise.txt");
 		Ani.init(this);
+
+		// INIT TEXT
+
 		textModul = new Texts("pearlinnoise.txt");
+
+//		INIT VOICE
 		speech = new Speech(this, "hey.wav");
 
-		setState(SILENCE);
+		// INIT BG
+
+		bg = new GradientBackground(this);
+
+		setState(NOISE);
 
 		fx = new PostFX(this);
 
@@ -177,13 +186,6 @@ public class Ruidoperla extends PApplet {
 		importCameraAnimation("camStates.json");
 		// gradient
 
-		peasyGradients = new PeasyGradients(this);
-		// grad = new Gradient(color(255,120,170), color(252,245,140));
-		// grad = new Gradient(color(255,100,100), color(252,245,140));
-		gradient = new Gradient(color(9, 101, 133), color(071, 244, 218), color(11, 167, 228), color(238, 85, 23),
-				color(112, 12, 25));
-		gradient.primeAnimation();
-		gradient.setInterpolationMode(Interpolation.SMOOTH_STEP);
 	}
 
 	@Override
@@ -200,7 +202,7 @@ public class Ruidoperla extends PApplet {
 //			setState(NOISE);
 //			
 //		}
-		
+
 		switch (actualSTATE) {
 		case NOISE:
 			// println("back to NOISE");
@@ -209,14 +211,14 @@ public class Ruidoperla extends PApplet {
 		case SILENCE:
 
 			if (speech.detectBeat()) {
-				//velocidad = 0;
+				// velocidad = 0;
 //				octava = 8;
 				println("MOVE ROBOT");
-				// poner en pausa audio - activar motor de pan&tilt 
+				// poner en pausa audio - activar motor de pan&tilt
 
 			}
-			
-			if(!speech.isPlaying()) {
+
+			if (!speech.isPlaying()) {
 				setState(NOISE);
 				speech.parar();
 			}
@@ -228,10 +230,9 @@ public class Ruidoperla extends PApplet {
 			break;
 		}
 
+		bg.draw();
 		// background(BG_CLR);
 		// peasyGradients.linearGradient(grad, 45); // angle = 0 (horizontal)
-
-		peasyGradients.spiralGradient(gradient, new PVector(width / 2, height / 2), (float) (frameCount * 0.02), 3);
 
 		// peasyGradients.noiseGradient(grad, new PVector(width*0.5,height*0.5),45,1.0);
 		// // angle = 0 (horizontal)
@@ -335,6 +336,48 @@ public class Ruidoperla extends PApplet {
 
 		default:
 			break;
+		}
+	}
+
+	class GradientBackground {
+//		 https://github.com/micycle1/PeasyGradients 
+		// GR
+		PeasyGradients peasyGradients;
+		Gradient gradient;
+		int clr1 = color(9, 101, 133);
+		int clr2 = color(071, 244, 218);
+		int clr3 = color(11, 167, 228);
+		int clr4 = color(238, 85, 23);
+		int[] tetadric;
+
+		public GradientBackground(PApplet p) {
+			peasyGradients = new PeasyGradients(p);
+			// grad = new Gradient(color(255,120,170), color(252,245,140));
+			// grad = new Gradient(color(255,100,100), color(252,245,140));
+			tetadric = Palette.tetradic();
+			gradient = new Gradient(tetadric[0],tetadric[1],tetadric[2],tetadric[3]);
+			
+//			gradient = new Gradient(clr1, clr2, clr3, clr4);
+			randomColors();
+			gradient.primeAnimation();
+			gradient.setInterpolationMode(Interpolation.SMOOTH_STEP);
+		}
+
+		public void randomColors() {
+			gradient = Gradient.randomGradient(12);
+//			= Palette.complementary();
+
+		}
+		
+		public void tetadricColors() {
+			tetadric = Palette.tetradic();
+			gradient = new Gradient(tetadric[0],tetadric[1],tetadric[2],tetadric[3]);
+		}
+
+		public void draw() {
+
+			peasyGradients.spiralGradient(gradient, new PVector(width / 2, height / 2), (float) (frameCount * 0.02), 3);
+
 		}
 	}
 
@@ -742,12 +785,13 @@ public class Ruidoperla extends PApplet {
 		}
 		if (key == 'r')
 			cam.setState(state, 1000);
-		if (key == 'g')
-			println(cam.getState());
 		if (key == 't')
 			TEXT = !TEXT;
 		if (key == 'a')
 			GUI = !GUI;
+
+		if (key == 'g')
+			bg.randomColors();
 	}
 
 	class Actor {
