@@ -116,6 +116,8 @@ public class Ruidoperla extends PApplet {
 	Texts textModul;
 	Speech speech;
 
+	Timer timer;
+
 	// method used only for setting the size of the window
 	public void settings() {
 		size(1280, 720, OPENGL);
@@ -126,6 +128,12 @@ public class Ruidoperla extends PApplet {
 
 		// texts = loadText("pearlinnoise.txt");
 		Ani.init(this);
+
+		// Timer
+
+		timer = new Timer(10.f);
+
+		timer.set(2.f);
 
 		// INIT TEXT
 
@@ -202,6 +210,10 @@ public class Ruidoperla extends PApplet {
 //			setState(NOISE);
 //			
 //		}
+
+		timer.up();
+
+		println(timer.getNow());
 
 		switch (actualSTATE) {
 		case NOISE:
@@ -367,18 +379,16 @@ public class Ruidoperla extends PApplet {
 //			= Palette.complementary();
 
 		}
-		
+
 		public void complementeryColors() {
 			complementery = Palette.complementary();
-			gradient = new Gradient(complementery[0],complementery[1]);
+			gradient = new Gradient(complementery[0], complementery[1]);
 			gradient.primeAnimation();
 		}
-		
-		
-		
+
 		public void tetadricColors() {
 			tetadric = Palette.tetradic();
-			gradient = new Gradient(tetadric[0],tetadric[1],tetadric[2],tetadric[3]);
+			gradient = new Gradient(tetadric[0], tetadric[1], tetadric[2], tetadric[3]);
 			gradient.primeAnimation();
 		}
 
@@ -881,6 +891,42 @@ public class Ruidoperla extends PApplet {
 			textAlign(CENTER, BOTTOM);
 			text(index, posX, posY);
 		}
+	}
+
+	class Timer {
+		float now;
+		boolean STOP;
+
+		Timer(float time) {
+			now = time;
+
+		}
+
+		public float getNow() {
+			return now;
+
+		}
+
+		public void set(float time) {
+			now = time;
+			STOP = false;
+
+		}
+
+		public void up() {
+			
+			now += 1 / frameRate;
+		}
+
+		public void down() {
+			if (now >= 0) {
+				now -= 1 / frameRate;
+
+			} else {
+				STOP = true;
+			}
+		}
+
 	}
 
 	public void armarGUI() {
