@@ -99,7 +99,6 @@ public class Ruidoperla extends PApplet {
 // VIsualize
 	boolean TEXT = true;
 	boolean GUI = true;
-
 	float[][] altitud;
 
 //actors
@@ -117,6 +116,7 @@ public class Ruidoperla extends PApplet {
 	Speech speech;
 
 	Timer timer;
+	float time;
 
 	// method used only for setting the size of the window
 	public void settings() {
@@ -131,9 +131,7 @@ public class Ruidoperla extends PApplet {
 
 		// Timer
 
-		timer = new Timer(10.f);
-
-		timer.set(2.f);
+		timer = new Timer(3.f);
 
 		// INIT TEXT
 
@@ -146,7 +144,7 @@ public class Ruidoperla extends PApplet {
 
 		bg = new GradientBackground(this);
 
-		setState(NOISE);
+		setState(SILENCE);
 
 		fx = new PostFX(this);
 
@@ -211,28 +209,29 @@ public class Ruidoperla extends PApplet {
 //			
 //		}
 
-		timer.up();
+		timer.down();
 
-		println(timer.getNow());
+		// println(timer.getNow());
 
 		switch (actualSTATE) {
 		case NOISE:
-			// println("back to NOISE");
+//			
 			break;
 
 		case SILENCE:
 
+		
+			
 			if (speech.detectBeat()) {
-				// velocidad = 0;
-//				octava = 8;
 				println("MOVE ROBOT");
 				// poner en pausa audio - activar motor de pan&tilt
 
 			}
 
 			if (!speech.isPlaying()) {
+				// speech.parar();
 				setState(NOISE);
-				speech.parar();
+
 			}
 			// speech.play();
 
@@ -337,18 +336,35 @@ public class Ruidoperla extends PApplet {
 		switch (actualSTATE) {
 		case NOISE:
 			println("state switched to NOISE");
-			speech.parar();
+			
+			velocidad = 8;
+//			octava = 4;
+//			falloff = 5.f;
+			
+			time = 0;
+			Ani.to(this, 3.f, "time", 3, Ani.LINEAR, "onEnd:setStateSilence");
+
 			break;
 
 		case SILENCE:
 
 			speech.play();
 			println("state switched to SILENCE");
+			bg.complementeryColors();
+
+			velocidad = 0;
+			octava = 8;
+			// timer.reset();
+			// timer.set(4.f);
 			break;
 
 		default:
 			break;
 		}
+	}
+
+	public void setStateSilence() {
+		setState(SILENCE);
 	}
 
 	class GradientBackground {
@@ -894,12 +910,13 @@ public class Ruidoperla extends PApplet {
 	}
 
 	class Timer {
-		float now;
+		float now, time;
 		boolean STOP;
 
-		Timer(float time) {
-			now = time;
-
+		Timer(float _time) {
+			now = _time;
+			time = _time;
+			STOP = true;
 		}
 
 		public float getNow() {
@@ -910,21 +927,34 @@ public class Ruidoperla extends PApplet {
 		public void set(float time) {
 			now = time;
 			STOP = false;
+			println("set timer for " + now);
 
 		}
 
 		public void up() {
-			
+
 			now += 1 / frameRate;
 		}
 
 		public void down() {
 			if (now >= 0) {
+
 				now -= 1 / frameRate;
 
 			} else {
 				STOP = true;
 			}
+		}
+
+		public void reset() {
+			STOP = false;
+			now = time;
+			println("reset timer for " + now);
+
+		}
+
+		public boolean isOver() {
+			return STOP;
 		}
 
 	}
