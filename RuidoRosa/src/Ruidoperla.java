@@ -118,6 +118,10 @@ public class Ruidoperla extends PApplet {
 	Timer timer;
 	float time;
 
+	float panRot = 0;
+
+	Actor pan, tilt;
+
 	// method used only for setting the size of the window
 	public void settings() {
 		size(1280, 720, OPENGL);
@@ -172,9 +176,12 @@ public class Ruidoperla extends PApplet {
 		velY = 0.2f;
 		resX = w / scl;
 		resY = h / scl;
+		println("resX = " + resX);
+
+		println("resY = " + resY);
 		altitud = new float[resX][resY];
 
-		initActors(resY - 1);
+		initActors(resY - 18);
 
 		// List all the available serial ports, preceded by their index number:
 		printArray(Serial.list());
@@ -197,33 +204,20 @@ public class Ruidoperla extends PApplet {
 	@Override
 	public void draw() {
 
-		/*
-		 * if (speech.detectBeat()) { velocidad = 0; octava = 8; println("beat"); } else
-		 * { velocidad = 10; octava = 2;
-		 * 
-		 * }
-		 */
-
-//		if (!speech.active) {
-//			setState(NOISE);
-//			
-//		}
-
 		timer.down();
 
 		// println(timer.getNow());
 
 		switch (actualSTATE) {
 		case NOISE:
-//			
+
 			break;
 
 		case SILENCE:
 
-		
-			
 			if (speech.detectBeat()) {
 				println("MOVE ROBOT");
+				moveRobot(0.7f, 90);
 				// poner en pausa audio - activar motor de pan&tilt
 
 			}
@@ -233,6 +227,9 @@ public class Ruidoperla extends PApplet {
 				setState(NOISE);
 
 			}
+
+			// println(panRot);
+			pan.rot = panRot;
 			// speech.play();
 
 			break;
@@ -296,8 +293,14 @@ public class Ruidoperla extends PApplet {
 				// .vignette(1.0,0.5)
 				.compose();
 
+//		UPdate just to 6 first actor to update height values of geomerty
+// the last actor s are reserved for Robet Arm 
+		for (int i = 0; i < 6; i++) {
+			actors.get(i).update();
+		}
+
 		if (GUI) {
-			gui();
+			showGUI();
 		}
 
 		//// LETTER on TOP
@@ -330,19 +333,26 @@ public class Ruidoperla extends PApplet {
 		}
 	}
 
+	public void moveRobot(float duration, int degree) {
+		panRot = 0;
+		Ani panAni = new Ani(this, duration, .3f, "panRot", degree, Ani.BOUNCE_IN_OUT);
+		panAni.setPlayMode(Ani.YOYO);
+	}
+
 	public void setState(int state) {
 		actualSTATE = state;
 
 		switch (actualSTATE) {
 		case NOISE:
 			println("state switched to NOISE");
-			
+
 			velocidad = 8;
 //			octava = 4;
 //			falloff = 5.f;
-			
+
 			time = 0;
-			Ani.to(this, 3.f, "time", 3, Ani.LINEAR, "onEnd:setStateSilence");
+
+			Ani.to(this, 60.f, "time", 60, Ani.LINEAR, "onEnd:setStateSilence");
 
 			break;
 
@@ -573,6 +583,10 @@ public class Ruidoperla extends PApplet {
 			}
 		}
 		println("size of actors Array: " + actors.size());
+
+		// TO move the robot
+		pan = actors.get(6);
+		tilt = actors.get(7);
 	}
 //// SETUP ------------------------------
 /// - - - - - - - - - - - - - - - - - - -
@@ -748,7 +762,7 @@ public class Ruidoperla extends PApplet {
 		// println(r, cam.getState());
 	}
 
-	public void gui() {
+	public void showGUI() {
 
 		hint(DISABLE_DEPTH_TEST);
 		cam.beginHUD();
@@ -758,7 +772,7 @@ public class Ruidoperla extends PApplet {
 		fill(255);
 
 		for (Actor a : actors) {
-			a.update();
+			// a.update();
 			a.render();
 		}
 
@@ -845,7 +859,7 @@ public class Ruidoperla extends PApplet {
 
 			x = _x;
 			y = _y;
-			// println("actor created at : " + x + " , " + y);
+			println("actor created at : " + x + " , " + y);
 			posX = x * 5 + offX;
 			posY = y * 5 + offY;
 			// posY = y;
