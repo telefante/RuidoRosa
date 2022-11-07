@@ -115,7 +115,6 @@ public class Ruidoperla extends PApplet {
 	Texts textModul;
 	Speech speech;
 
-	Timer timer;
 	float time;
 
 	float panRot = 0;
@@ -134,10 +133,7 @@ public class Ruidoperla extends PApplet {
 		// texts = loadText("pearlinnoise.txt");
 		Ani.init(this);
 
-		// Timer
-
-		timer = new Timer(3.f);
-
+		
 		// INIT TEXT
 
 		textModul = new Texts("pearlinnoise.txt");
@@ -149,7 +145,7 @@ public class Ruidoperla extends PApplet {
 
 		bg = new GradientBackground(this);
 
-		setState(SILENCE);
+	
 
 		fx = new PostFX(this);
 
@@ -199,15 +195,15 @@ public class Ruidoperla extends PApplet {
 		// JSON CAMStates
 		importCameraAnimation("camStates.json");
 		// gradient
+		
+		
+		// begin with NOISE 
+		setState(NOISE);
 
 	}
 
 	@Override
 	public void draw() {
-
-		timer.down();
-
-		// println(timer.getNow());
 
 		switch (actualSTATE) {
 		case NOISE:
@@ -216,6 +212,7 @@ public class Ruidoperla extends PApplet {
 
 		case SILENCE:
 
+			
 			if (speech.detectBeat()) {
 				println("MOVE ROBOT");
 				moveRobot(0.7f, 90);
@@ -352,26 +349,34 @@ public class Ruidoperla extends PApplet {
 		case NOISE:
 			println("state switched to NOISE");
 
-			velocidad = 8;
-//			octava = 4;
-//			falloff = 5.f;
+			velocidad = 10;
+			octava = 4;
+			falloff = .3f;
 
+			
+		//	textModul.resume();
+
+			// in 60 sec setstate SILENCE
 			time = 0;
+			Ani.to(this, 5.f, "time", 5, Ani.LINEAR, "onEnd:setStateSilence");
 
-			Ani.to(this, 60.f, "time", 60, Ani.LINEAR, "onEnd:setStateSilence");
-
+			
 			break;
+			
 
 		case SILENCE:
-
-			speech.play();
+			
 			println("state switched to SILENCE");
+			
+			textModul.pause();
+			
+			speech.play();
 			bg.complementeryColors();
-
+			
+			
 			velocidad = 0;
-			octava = 8;
-			// timer.reset();
-			// timer.set(4.f);
+			falloff= 0;
+			octava = 0;
 			break;
 
 		default:
@@ -531,7 +536,7 @@ public class Ruidoperla extends PApplet {
 			// sustain = 7.f;
 			// sustain depends on leght onf line
 			sustain = lines[actualIndex].length() / 2;
-			firstDelay = 20.f;
+			firstDelay = 0.f;
 			// Ani.to(this, fadeIn, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
 			fadingAni = new Ani(this, fadeIn, firstDelay, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
 			fontsize = (int) (height * 0.07f);
@@ -541,6 +546,15 @@ public class Ruidoperla extends PApplet {
 		void fadeOutAfter() {
 			// println("fadeOut");
 			Ani.to(this, fadeOut, sustain, "alpha", 0, Ani.EXPO_IN_OUT, "onEnd:nextLine");
+		}
+		
+		public void pause() {
+			Ani.to(this, fadeOut,0, "alpha", 0, Ani.LINEAR);
+		}
+		
+		public void resume() {
+//			Ani.to(this, fadeIn,0, "alpha", 255.f, Ani.EXPO_IN, "onEnd:fadeOutAfter");
+			fadingAni.repeat();
 		}
 
 		public void nextLine() {
