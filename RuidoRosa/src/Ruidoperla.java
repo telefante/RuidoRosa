@@ -119,6 +119,7 @@ public class Ruidoperla extends PApplet {
 	float time;
 
 	float panRot = 0;
+	float tiltRot = 0;
 
 	Actor pan, tilt;
 
@@ -230,6 +231,7 @@ public class Ruidoperla extends PApplet {
 
 			// println(panRot);
 			pan.rot = panRot;
+			tilt.rot = tiltRot;
 			// speech.play();
 
 			break;
@@ -335,8 +337,12 @@ public class Ruidoperla extends PApplet {
 
 	public void moveRobot(float duration, int degree) {
 		panRot = 0;
-		Ani panAni = new Ani(this, duration, .3f, "panRot", degree, Ani.BOUNCE_IN_OUT);
+		tiltRot  = 0;
+		Ani panAni = new Ani(this, duration, .0f, "panRot", degree, Ani.LINEAR);
 		panAni.setPlayMode(Ani.YOYO);
+
+		Ani tiltAni = new Ani(this, duration, .5f, "tiltRot", 180, Ani.EXPO_IN_OUT);
+		tiltAni.setPlayMode(Ani.YOYO);
 	}
 
 	public void setState(int state) {
