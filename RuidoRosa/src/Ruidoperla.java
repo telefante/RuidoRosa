@@ -540,7 +540,7 @@ public class Ruidoperla extends PApplet {
 
 		void fadeOutAfter() {
 			// println("fadeOut");
-			Ani.to(this, fadeOut, 0, "alpha", sustain, Ani.EXPO_IN_OUT, "onEnd:nextLine");
+			Ani.to(this, fadeOut, sustain, "alpha", 0, Ani.EXPO_IN_OUT, "onEnd:nextLine");
 		}
 
 		public void nextLine() {
