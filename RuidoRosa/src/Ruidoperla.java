@@ -403,10 +403,10 @@ public class Ruidoperla extends PApplet {
 			peasyGradients = new PeasyGradients(p);
 			// grad = new Gradient(color(255,120,170), color(252,245,140));
 			// grad = new Gradient(color(255,100,100), color(252,245,140));
-			tetadricColors();
+			//tetadricColors();
 //			complementeryColors();
-//			gradient = new Gradient(clr1, clr2, clr3, clr4);
-			randomColors(4);
+			gradient = new Gradient(clr1, clr2, clr3, clr4);
+			//randomColors(4);
 			gradient.primeAnimation();
 			gradient.setInterpolationMode(Interpolation.SMOOTH_STEP);
 		}
@@ -415,6 +415,13 @@ public class Ruidoperla extends PApplet {
 			gradient = Gradient.randomGradient(howmanyColors);
 //			= Palette.complementary();
 
+		}
+		
+		public void resetColors() {
+			gradient = new Gradient(clr1, clr2, clr3, clr4);
+			//randomColors(4);
+			gradient.primeAnimation();
+			gradient.setInterpolationMode(Interpolation.SMOOTH_STEP);
 		}
 
 		public void complementeryColors() {
