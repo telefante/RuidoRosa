@@ -520,7 +520,7 @@ public class Ruidoperla extends PApplet {
 		float fadeIn, fadeOut, firstDelay;
 		float sustain;
 		float alpha;
-		Ani fadingAni;
+		Ani fadeInAni,fadeOutAni;
 		int fontsize;
 
 		Texts(String file) {
@@ -538,7 +538,7 @@ public class Ruidoperla extends PApplet {
 			sustain = lines[actualIndex].length() / 2;
 			firstDelay = 0.f;
 			// Ani.to(this, fadeIn, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
-			fadingAni = new Ani(this, fadeIn, firstDelay, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
+			fadeInAni = new Ani(this, fadeIn, firstDelay, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
 			fontsize = (int) (height * 0.07f);
 
 		}
@@ -549,12 +549,12 @@ public class Ruidoperla extends PApplet {
 		}
 		
 		public void pause() {
-			Ani.to(this, fadeOut,0, "alpha", 0, Ani.LINEAR);
+			fadeOutAni = new Ani(this, fadeOut,0, "alpha", 0, Ani.LINEAR);
 		}
 		
 		public void resume() {
 //			Ani.to(this, fadeIn,0, "alpha", 255.f, Ani.EXPO_IN, "onEnd:fadeOutAfter");
-			fadingAni.repeat();
+			fadeInAni.repeat();
 		}
 
 		public void nextLine() {
