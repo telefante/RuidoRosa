@@ -346,6 +346,10 @@ public class Ruidoperla extends PApplet {
 			time = 0;
 			Ani.to(this, 5.f, "time", 5, Ani.LINEAR, "onEnd:setStateSilence");
 
+			
+			//back to init colors 
+			bg.resetColors();
+			
 			break;
 
 		case SILENCE:
