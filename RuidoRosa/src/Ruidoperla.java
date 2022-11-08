@@ -133,7 +133,6 @@ public class Ruidoperla extends PApplet {
 		// texts = loadText("pearlinnoise.txt");
 		Ani.init(this);
 
-		
 		// INIT TEXT
 
 		textModul = new Texts("pearlinnoise.txt");
@@ -145,17 +144,12 @@ public class Ruidoperla extends PApplet {
 
 		bg = new GradientBackground(this);
 
-	
-
 		fx = new PostFX(this);
 
 		frameRate(25);
 		// define camState
-		// r = int(random(0, 3));
 		r = 0;
-		// off = createGraphics(600,600);
-		// size(1280, 720, OPENGL);
-
+		
 		cam = new PeasyCam(this, 100);
 		cam.setActive(false);
 		cam.setWheelScale(0.2);
@@ -164,7 +158,7 @@ public class Ruidoperla extends PApplet {
 		// visualiza los GUI y actores
 		armarGUI();
 
-		// setAnimSeq();
+		
 		if (GEOMETRY_ANIM) {
 			startAnimSeq("animSeqSteps.json");
 		}
@@ -195,9 +189,8 @@ public class Ruidoperla extends PApplet {
 		// JSON CAMStates
 		importCameraAnimation("camStates.json");
 		// gradient
-		
-		
-		// begin with NOISE 
+
+		// begin with NOISE
 		setState(NOISE);
 
 	}
@@ -212,9 +205,10 @@ public class Ruidoperla extends PApplet {
 
 		case SILENCE:
 
-			
 			if (speech.detectBeat()) {
 				println("MOVE ROBOT");
+				
+				// velocidad y grados
 				moveRobot(0.7f, 90);
 				// poner en pausa audio - activar motor de pan&tilt
 
@@ -238,11 +232,6 @@ public class Ruidoperla extends PApplet {
 		}
 
 		bg.draw();
-		// background(BG_CLR);
-		// peasyGradients.linearGradient(grad, 45); // angle = 0 (horizontal)
-
-		// peasyGradients.noiseGradient(grad, new PVector(width*0.5,height*0.5),45,1.0);
-		// // angle = 0 (horizontal)
 
 		lights();
 		noiseDetail(octava, falloff);
@@ -287,13 +276,15 @@ public class Ruidoperla extends PApplet {
 		textSize(48);
 		fill(255);
 
+		// LOOK 
 		fx.render().blur(2, 2.0f)
 				// .chromaticAberration()
 				// .vignette(1.0,0.5)
 				.compose();
 
-//		UPdate just to 6 first actor to update height values of geomerty
-// the last actor s are reserved for Robet Arm 
+// Update just to 6 first actor to update height values of geometry
+// the last actors are reserved for Robot Arm 
+		// los primeros 6 pines reservados para las maracas en el piso 
 		for (int i = 0; i < 6; i++) {
 			actors.get(i).update();
 		}
@@ -307,10 +298,6 @@ public class Ruidoperla extends PApplet {
 		hint(DISABLE_DEPTH_TEST);
 		cam.beginHUD();
 
-		/*
-		 * textFont(f); textAlign(CENTER); if (TEXT) { text("contemplate", width / 2,
-		 * height / 2); }
-		 */
 		if (TEXT) {
 			textModul.render();
 		}
@@ -334,11 +321,11 @@ public class Ruidoperla extends PApplet {
 
 	public void moveRobot(float duration, int degree) {
 		panRot = 0;
-		tiltRot  = 0;
+		tiltRot = 0;
 		Ani panAni = new Ani(this, duration, .0f, "panRot", degree, Ani.LINEAR);
 		panAni.setPlayMode(Ani.YOYO);
 
-		Ani tiltAni = new Ani(this, duration, .5f, "tiltRot", 180, Ani.EXPO_IN_OUT);
+		Ani tiltAni = new Ani(this, duration, .5f, "tiltRot", degree, Ani.EXPO_IN_OUT);
 		tiltAni.setPlayMode(Ani.YOYO);
 	}
 
@@ -353,29 +340,25 @@ public class Ruidoperla extends PApplet {
 			octava = 4;
 			falloff = .3f;
 
-			
-		//	textModul.resume();
+			// textModul.resume();
 
 			// in 60 sec setstate SILENCE
 			time = 0;
 			Ani.to(this, 5.f, "time", 5, Ani.LINEAR, "onEnd:setStateSilence");
 
-			
 			break;
-			
 
 		case SILENCE:
-			
+
 			println("state switched to SILENCE");
-			
+
 			textModul.pause();
-			
+
 			speech.play();
 			bg.complementeryColors();
-			
-			
+
 			velocidad = 0;
-			falloff= 0;
+			falloff = 0;
 			octava = 0;
 			break;
 
@@ -401,25 +384,23 @@ public class Ruidoperla extends PApplet {
 
 		public GradientBackground(PApplet p) {
 			peasyGradients = new PeasyGradients(p);
-			// grad = new Gradient(color(255,120,170), color(252,245,140));
-			// grad = new Gradient(color(255,100,100), color(252,245,140));
-			//tetadricColors();
-//			complementeryColors();
+		
+			// tetadricColors();
+			//complementeryColors();
 			gradient = new Gradient(clr1, clr2, clr3, clr4);
-			//randomColors(4);
+			// randomColors(4);
 			gradient.primeAnimation();
 			gradient.setInterpolationMode(Interpolation.SMOOTH_STEP);
 		}
 
 		public void randomColors(int howmanyColors) {
 			gradient = Gradient.randomGradient(howmanyColors);
-//			= Palette.complementary();
 
 		}
-		
+
 		public void resetColors() {
 			gradient = new Gradient(clr1, clr2, clr3, clr4);
-			//randomColors(4);
+			// randomColors(4);
 			gradient.primeAnimation();
 			gradient.setInterpolationMode(Interpolation.SMOOTH_STEP);
 		}
@@ -527,7 +508,7 @@ public class Ruidoperla extends PApplet {
 		float fadeIn, fadeOut, firstDelay;
 		float sustain;
 		float alpha;
-		Ani fadeInAni,fadeOutAni;
+		Ani fadeInAni, fadeOutAni;
 		int fontsize;
 
 		Texts(String file) {
@@ -554,11 +535,11 @@ public class Ruidoperla extends PApplet {
 			// println("fadeOut");
 			Ani.to(this, fadeOut, sustain, "alpha", 0, Ani.EXPO_IN_OUT, "onEnd:nextLine");
 		}
-		
+
 		public void pause() {
-			fadeOutAni = new Ani(this, fadeOut,0, "alpha", 0, Ani.LINEAR);
+			fadeOutAni = new Ani(this, fadeOut, 0, "alpha", 0, Ani.LINEAR);
 		}
-		
+
 		public void resume() {
 //			Ani.to(this, fadeIn,0, "alpha", 255.f, Ani.EXPO_IN, "onEnd:fadeOutAfter");
 			fadeInAni.repeat();
@@ -729,8 +710,6 @@ public class Ruidoperla extends PApplet {
 
 		}
 
-		// seq.add(Ani.to(this, 10, "octava:2,velocidad:30.0"));
-
 		// step 1
 		// seq.add(Ani.to(this, 10, "falloff", 2));
 
@@ -742,21 +721,21 @@ public class Ruidoperla extends PApplet {
 
 	public void setAnimSeq() {
 
-		// create a sequence
-		// dont forget to call beginSequence() and endSequence()
-//		seq = new AniSequence(this);
-//		seq.beginSequence();
-//
-//		// step 0
-//		seq.add(Ani.to(this, 10, "octava:2,velocidad:30.0"));
-//
-//		// step 1
-//		seq.add(Ani.to(this, 10, "falloff", 2));
-//
-//		seq.endSequence();
-//
-//		// start the whole sequence
-//		seq.start();
+//		 create a sequence
+//		 dont forget to call beginSequence() and endSequence()
+		seq = new AniSequence(this);
+		seq.beginSequence();
+
+		// step 0
+		seq.add(Ani.to(this, 10, "octava:2,velocidad:30.0"));
+
+		// step 1
+		seq.add(Ani.to(this, 10, "falloff", 2));
+
+		seq.endSequence();
+
+		// start the whole sequence
+		seq.start();
 	}
 
 	public void animateCamera() {
@@ -866,7 +845,7 @@ public class Ruidoperla extends PApplet {
 			GUI = !GUI;
 
 		if (key == 'g')
-//			bg.randomColors(36);
+			//bg.randomColors(36);
 			bg.tetadricColors();
 	}
 
@@ -913,10 +892,8 @@ public class Ruidoperla extends PApplet {
 			}
 			rot = value;
 
-			// rotRadians = norm(altitud[x][y]*4, -amplitud, amplitud);
-
-			// port.write(int(rot)); // Write the angle to the serial port
-			// println(rot);
+			
+			
 		}
 
 		void setActive(boolean b) {
@@ -1013,11 +990,7 @@ public class Ruidoperla extends PApplet {
 		cp5.getController("falloff").getCaptionLabel().setColor(color(255, 0, 0));
 		cp5.getController("velocidad").getCaptionLabel().setColor(color(255, 0, 0));
 		cp5.getController("scl").getCaptionLabel().setColor(color(255, 0, 0));
-		// reposition the Label for controller 'slider'
-		// cp5.getController("slider").getValueLabel().align(ControlP5.LEFT,
-		// ControlP5.BOTTOM_OUTSIDE).setPaddingX(0);
-		// cp5.getController("slider").getCaptionLabel().align(ControlP5.RIGHT,
-		// ControlP5.BOTTOM_OUTSIDE).setPaddingX(0);
+		
 	}
 
 }
