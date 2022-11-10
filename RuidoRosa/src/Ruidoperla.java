@@ -56,9 +56,21 @@ public class Ruidoperla extends PApplet {
 	PeasyCam cam;
 	CameraState state;
 
+	
+//	Constant zum INIT 
 	boolean CAM_ANIM = true;
 	boolean GEOMETRY_ANIM = false;
 	int ANIM_TIME = 30000;
+		
+	// VIsualize
+		boolean TEXT = true;
+		boolean GUI = false;
+		
+	public static final	int WIDTH = 1920;
+	public static final	int	HEIGHT = 1080;
+	private static final float SPEECH_TIME = 60;
+	
+		
 	long nextEvent = 0;
 	int r;
 	JSONArray camStatesJSON, camStatesJSONImport;
@@ -96,9 +108,7 @@ public class Ruidoperla extends PApplet {
 // color LINE_CLR = color(90, 255, 0);
 	int LINE_CLR = color(0);
 
-// VIsualize
-	boolean TEXT = true;
-	boolean GUI = true;
+
 	float[][] altitud;
 
 //actors
@@ -124,7 +134,7 @@ public class Ruidoperla extends PApplet {
 
 	// method used only for setting the size of the window
 	public void settings() {
-		size(1280, 720, OPENGL);
+		size(WIDTH, HEIGHT, OPENGL);
 	}
 
 	@Override
@@ -344,7 +354,7 @@ public class Ruidoperla extends PApplet {
 
 			// in 60 sec setstate SILENCE
 			time = 0;
-			Ani.to(this, 5.f, "time", 5, Ani.LINEAR, "onEnd:setStateSilence");
+			Ani.to(this, SPEECH_TIME, "time",(int) SPEECH_TIME, Ani.LINEAR, "onEnd:setStateSilence");
 
 			
 			//back to init colors 
