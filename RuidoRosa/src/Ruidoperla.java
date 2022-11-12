@@ -129,6 +129,8 @@ public class Ruidoperla extends PApplet {
 	float tiltRot = 0;
 
 	Actor pan, tilt;
+	
+//	String[] soundFiles = { "woher.wav", "hey.wav"};
 
 	// method used only for setting the size of the window
 	public void settings() {
@@ -140,13 +142,15 @@ public class Ruidoperla extends PApplet {
 
 		// texts = loadText("pearlinnoise.txt");
 		Ani.init(this);
+		
+		noCursor();
 
 		// INIT TEXT
 
 		textModul = new Texts("pearlinnoise.txt");
 
 //		INIT VOICE
-		speech = new Speech(this, "hey.wav");
+		speech = new Speech(this, "woher.wav");
 
 		// INIT BG
 
@@ -533,8 +537,25 @@ public class Ruidoperla extends PApplet {
 		// Used for storing the smoothed amplitude value
 		float sum;
 		String filestring;
+		PApplet parent;
+		String[] filenames;
+		int index;
 
 		Speech(PApplet p, String filename) {
+			parent = p;
+			initSoundFile(parent, filename);
+			active = false;
+		}
+		
+//		Speech(PApplet p, String[] strings) {
+//			parent = p;
+//			filenames = strings; 
+//			index = 0;
+//			initSoundFile(parent, filenames[index]);
+//			active = false;
+//		}
+
+		public void initSoundFile(PApplet p, String filename) {
 			file = new SoundFile(p, filename);
 			filestring = filename;
 			// file.play();
@@ -548,7 +569,6 @@ public class Ruidoperla extends PApplet {
 			// Create and patch the rms tracker
 			rms = new Amplitude(p);
 			rms.input(file);
-			active = false;
 		}
 
 		public boolean detectBeat() {
@@ -566,6 +586,7 @@ public class Ruidoperla extends PApplet {
 			if (!file.isPlaying())
 				println("play" + filestring);
 			file.play();
+			file.add(.3f);
 			active = true;
 		}
 
@@ -586,6 +607,7 @@ public class Ruidoperla extends PApplet {
 			boolean p = file.isPlaying();
 			if (!p) {
 				active = false;
+				initSoundFile(parent, "hey.wav");
 			}
 			return p;
 		}
