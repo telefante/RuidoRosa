@@ -130,7 +130,7 @@ public class Ruidoperla extends PApplet {
 
 	Actor pan, tilt;
 	
-//	String[] soundFiles = { "woher.wav", "hey.wav"};
+	String[] soundFiles = { "woher.wav", "hey.wav"};
 
 	// method used only for setting the size of the window
 	public void settings() {
@@ -150,7 +150,8 @@ public class Ruidoperla extends PApplet {
 		textModul = new Texts("pearlinnoise.txt");
 
 //		INIT VOICE
-		speech = new Speech(this, "woher.wav");
+//		speech = new Speech(this, "woher.wav");
+		speech = new Speech(this, soundFiles);
 
 		// INIT BG
 
@@ -547,13 +548,13 @@ public class Ruidoperla extends PApplet {
 			active = false;
 		}
 		
-//		Speech(PApplet p, String[] strings) {
-//			parent = p;
-//			filenames = strings; 
-//			index = 0;
-//			initSoundFile(parent, filenames[index]);
-//			active = false;
-//		}
+		Speech(PApplet p, String[] strings) {
+			parent = p;
+			filenames = strings; 
+			index = 0;
+			initSoundFile(parent, filenames[index]);
+			active = false;
+		}
 
 		public void initSoundFile(PApplet p, String filename) {
 			file = new SoundFile(p, filename);
@@ -607,7 +608,8 @@ public class Ruidoperla extends PApplet {
 			boolean p = file.isPlaying();
 			if (!p) {
 				active = false;
-				initSoundFile(parent, "hey.wav");
+				index++;
+				initSoundFile(parent, filenames[index%filenames.length]);
 			}
 			return p;
 		}
