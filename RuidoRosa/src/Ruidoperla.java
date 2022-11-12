@@ -46,17 +46,17 @@ public class Ruidoperla extends PApplet {
 	// int[] states = { NOISE, SILENCE };
 	int actualSTATE;
 
-// UI
+	// UI
 	ControlP5 cp5;
 
 	PostFX fx;
 
-// CAMERAS
-//Initializing the cameraStates
+	// CAMERAS
+	// Initializing the cameraStates
 	PeasyCam cam;
 	CameraState state;
 
-//	Constant zum INIT 
+	// Constant zum INIT
 	boolean CAM_ANIM = true;
 	boolean GEOMETRY_ANIM = false;
 	int ANIM_TIME = 30000;
@@ -67,7 +67,7 @@ public class Ruidoperla extends PApplet {
 
 	public static final int WIDTH = 1280;
 	public static final int HEIGHT = 720;
-	private static final float SPEECH_TIME = 6;
+	private static final float SPEECH_TIME = 7;
 
 	long nextEvent = 0;
 	int r;
@@ -86,12 +86,12 @@ public class Ruidoperla extends PApplet {
 	float mx = 0.0f;
 	boolean firstContact;
 
-// GEOMETRY
-///- ---------
-//noiseDetail
-//number of octaves to be used by the noise
+	// GEOMETRY
+	/// - ---------
+	// noiseDetail
+	// number of octaves to be used by the noise
 	int octava = 2;
-//falloff factor for each octave
+	// falloff factor for each octave
 	float falloff = 0.0f;
 
 	int resX, resY;
@@ -103,7 +103,8 @@ public class Ruidoperla extends PApplet {
 	int amplitud = 100;
 
 	int BG_CLR = 0;
-// color LINE_CLR = color(90, 255, 0);
+	// color LINE_CLR = color(90, 255, 0);
+
 	int LINE_CLR = color(0);
 
 	float[][] altitud;
@@ -365,7 +366,8 @@ public class Ruidoperla extends PApplet {
 
 			speech.play();
 //			bg.complementeryColors();
-			bg.tetadricColors();
+//			bg.tetadricColors();
+			bg.blendColor(3);
 			velocidad = 0;
 			falloff = 0;
 			octava = 0;
@@ -386,29 +388,55 @@ public class Ruidoperla extends PApplet {
 		PeasyGradients peasyGradients;
 		Gradient gradient;
 		int clr1, clr2, clr3, clr4;
+		int hue1, hue2, hue3, hue4;
 		int[] resetColors = new int[4];
 		int[] tetadric, complementery;
 		Ani clrAni1, clrAni2, clrAni3, clrAni4;
+		Ani clrAni;
+		int[] actualCrl = new int[4];
+		int[] fromClr = new int[4];
+		int[] toClr = new int[4];
+		private float blendfactor;
 
 		public GradientBackground(PApplet p) {
 			peasyGradients = new PeasyGradients(p);
 
+			// colorMode(HSB, 360, 100, 100);
+
 			clr1 = color(9, 101, 133);
+			actualCrl[0] = color(9, 101, 133);
+			// HSB
+//			hue1 = 224;
+			// clr1 = color(hue1, 32, 51);
+
+			// RBG
 			clr2 = color(071, 244, 218);
+			actualCrl[1] = color(071, 244, 218);
+//			clr2 = color(173,70,94);
+
 			clr3 = color(11, 167, 228);
+			actualCrl[2] = color(11, 167, 228);
 			clr4 = color(238, 85, 23);
+			actualCrl[3] = color(238, 85, 23);
 
-			resetColors[0] = clr1;
-
-			resetColors[1] = clr2;
-			resetColors[2] = clr3;
-			resetColors[3] = clr4;
+			for (int i = 0; i < actualCrl.length; i++) {
+				resetColors[i] = actualCrl[i];
+				fromClr[i] = actualCrl[i];
+			}
+//			resetColors[0] = clr1;
+//
+//			resetColors[1] = clr2;
+//			resetColors[2] = clr3;
+//			resetColors[3] = clr4;
 			// tetadricColors();
 			// complementeryColors();
-			gradient = new Gradient(clr1, clr2, clr3, clr4);
+//			gradient = new Gradient(clr1, clr2, clr3, clr4);
+			gradient = new Gradient(actualCrl[0], actualCrl[1], actualCrl[2], actualCrl[3]);
 			// randomColors(4);
 			gradient.primeAnimation();
 			gradient.setInterpolationMode(Interpolation.SMOOTH_STEP);
+			blendfactor = 0.f;
+
 		}
 
 		public void randomColors(int howmanyColors) {
@@ -417,20 +445,21 @@ public class Ruidoperla extends PApplet {
 		}
 
 		public void resetColors() {
-//			gradient = new Gradient(resetColors[0], resetColors[1], resetColors[2], resetColors[3]);
+			blendfactor = 0;
+			gradient = new Gradient(resetColors[0], resetColors[1], resetColors[2], resetColors[3]);
 
-			clrAni1 = new Ani(this, 1.f, 0, "clr1", resetColors[0], Ani.EXPO_IN_OUT);
-			clrAni1.start();
-			clrAni2 = new Ani(this, 1.f, 0, "clr2", resetColors[1], Ani.EXPO_IN_OUT);
-			clrAni2.start();
-			clrAni3 = new Ani(this, 1.f, 0, "clr3", resetColors[2], Ani.EXPO_IN_OUT);
-			clrAni3.start();
-			clrAni4 = new Ani(this, 1.f, 0, "clr4", resetColors[3], Ani.EXPO_IN_OUT);
-			clrAni4.start();
+//			clrAni1 = new Ani(this, 1.f, 0, "hue1", resetColors[0], Ani.EXPO_IN_OUT);
+//			clrAni1.start();
+//			clrAni2 = new Ani(this, 1.f, 0, "hue2", resetColors[1], Ani.EXPO_IN_OUT);
+//			clrAni2.start();
+//			clrAni3 = new Ani(this, 1.f, 0, "hue3", resetColors[2], Ani.EXPO_IN_OUT);
+//			clrAni3.start();
+//			clrAni4 = new Ani(this, 1.f, 0, "clr4", resetColors[3], Ani.EXPO_IN_OUT);
+//			clrAni4.start();
 
 			// randomColors(4);
-//			gradient.primeAnimation();
-//			gradient.setInterpolationMode(Interpolation.SMOOTH_STEP);
+			gradient.primeAnimation();
+			gradient.setInterpolationMode(Interpolation.SMOOTH_STEP);
 		}
 
 		public void complementeryColors() {
@@ -452,27 +481,36 @@ public class Ruidoperla extends PApplet {
 			tetadric = Palette.tetradic();
 			println("tetradic!");
 
-			Ani clrAni1 = new Ani(this, 10.f, 0, "clr1", tetadric[0], Ani.EXPO_IN_OUT);
-			clrAni1.start();
-			Ani clrAni2 = new Ani(this, 10.f, 0, "clr2", tetadric[1], Ani.EXPO_IN_OUT);
-			clrAni2.start();
-			Ani clrAni3 = new Ani(this, 10.f, 0, "clr3", tetadric[2], Ani.EXPO_IN_OUT);
-			clrAni3.start();
-			Ani clrAni4 = new Ani(this, 10.f, 0, "clr4", tetadric[3], Ani.EXPO_IN_OUT);
-			clrAni4.start();
+//		
+			gradient = new Gradient(tetadric[0], tetadric[1], tetadric[2], tetadric[3]);
+			gradient.primeAnimation();
+		}
 
-			// gradient = new Gradient(tetadric[0], tetadric[1], tetadric[2], tetadric[3]);
-			// gradient.primeAnimation();
+		public void blendColor(float time) {
+			blendfactor = 0;
+			toClr = Palette.tetradic();
+
+			for (int i = 0; i < fromClr.length; i++) {
+				fromClr[i] = actualCrl[i];
+			}
+
+			clrAni = new Ani(this, time, 0, "blendfactor", 1.0f, Ani.EXPO_IN_OUT);
+
 		}
 
 		public void draw() {
 			// gradient = new Gradient(clr1, clr2, clr3, clr4);
 
-			gradient.setStopColor(0, clr1);
-			gradient.setStopColor(1, clr2);
-			gradient.setStopColor(2, clr3);
-			gradient.setStopColor(3, clr4);
-
+		
+			//println(blendfactor);
+			for (int i = 0; i < actualCrl.length; i++) {
+				gradient.setStopColor(i, actualCrl[i]);
+				actualCrl[i] = lerpColor(fromClr[i], toClr[i], blendfactor);
+			}
+			
+//			intersante efecto 
+			gradient = new Gradient(actualCrl[0], actualCrl[1], actualCrl[2], actualCrl[3]);
+			gradient.primeAnimation();
 			peasyGradients.spiralGradient(gradient, new PVector(width / 2, height / 2), (float) (frameCount * 0.02), 3);
 
 		}
