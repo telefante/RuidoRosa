@@ -67,7 +67,8 @@ public class Ruidoperla extends PApplet {
 
 	public static final int WIDTH = 1280;
 	public static final int HEIGHT = 720;
-	private static final float SPEECH_TIME = 60;
+	private static final float SPEECH_TIME = 4;
+	public static final int BEAT_SENTIVITY = 10;
 
 	long nextEvent = 0;
 	int r;
@@ -130,7 +131,7 @@ public class Ruidoperla extends PApplet {
 
 	Actor pan, tilt;
 	
-	String[] soundFiles = { "woher.wav", "hey.wav"};
+	String[] soundFiles = { "hey.wav","woher.wav"};
 
 	// method used only for setting the size of the window
 	public void settings() {
@@ -140,7 +141,8 @@ public class Ruidoperla extends PApplet {
 	@Override
 	public void setup() {
 		Ani.init(this);
-		
+		 exec("say", "hi");
+		 
 		noCursor();
 
 		// INIT TEXT
@@ -525,7 +527,7 @@ public class Ruidoperla extends PApplet {
 			file.stop();
 			beatDetector = new BeatDetector(p);
 			beatDetector.input(file);
-			beatDetector.sensitivity(150);
+			beatDetector.sensitivity(BEAT_SENTIVITY);
 
 			// PeakAmpltude
 			// Create and patch the rms tracker
