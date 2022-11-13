@@ -130,8 +130,8 @@ public class Ruidoperla extends PApplet {
 	float tiltRot = 0;
 
 	Actor pan, tilt;
-	
-	String[] soundFiles = { "hey.wav","woher.wav"};
+
+	String[] soundFiles = { "hey.wav", "woher.wav" };
 
 	// method used only for setting the size of the window
 	public void settings() {
@@ -141,8 +141,7 @@ public class Ruidoperla extends PApplet {
 	@Override
 	public void setup() {
 		Ani.init(this);
-		 exec("say", "hi");
-		 
+
 		noCursor();
 
 		// INIT TEXT
@@ -402,7 +401,7 @@ public class Ruidoperla extends PApplet {
 		private float blendfactor;
 
 		public GradientBackground(PApplet p) {
-			
+
 			peasyGradients = new PeasyGradients(p);
 
 			// colorMode(HSB, 360, 100, 100);
@@ -469,13 +468,12 @@ public class Ruidoperla extends PApplet {
 		public void draw() {
 			// gradient = new Gradient(clr1, clr2, clr3, clr4);
 
-		
-			//println(blendfactor);
+			// println(blendfactor);
 			for (int i = 0; i < actualCrl.length; i++) {
 				gradient.setStopColor(i, actualCrl[i]);
 				actualCrl[i] = lerpColor(fromClr[i], toClr[i], blendfactor);
 			}
-			
+
 //			intersante efecto 
 			gradient = new Gradient(actualCrl[0], actualCrl[1], actualCrl[2], actualCrl[3]);
 			gradient.primeAnimation();
@@ -487,6 +485,8 @@ public class Ruidoperla extends PApplet {
 	class Speech {
 
 		SoundFile file;
+		SoundFile[] sounds;
+		BeatDetector[] beats;
 		BeatDetector beatDetector;
 		Amplitude rms;
 		boolean active;
@@ -510,16 +510,34 @@ public class Ruidoperla extends PApplet {
 			initSoundFile(parent, filename);
 			active = false;
 		}
-		
+
 		Speech(PApplet p, String[] strings) {
-			parent = p;
-			filenames = strings; 
+//			parent = p;
+//			filenames = strings;
 			index = 0;
-			initSoundFile(parent, filenames[index]);
+			// initSoundFile(parent, filenames[index]);
 			active = false;
+			sounds = new SoundFile[strings.length];
+			beats = new BeatDetector[strings.length];
+
+			for (int i = 0; i < strings.length; i++) {
+				SoundFile thisSound = new SoundFile(p, strings[i]);
+				thisSound.stop();
+				sounds[i] = thisSound;
+				beats[i] = new BeatDetector(p);
+				beats[i].input(sounds[i]);
+				beats[i].sensitivity(BEAT_SENTIVITY);
+
+				// PeakAmpltude
+				// Create and patch the rms tracker
+//				rms = new Amplitude(p);
+//				rms.input(thisSound);
+			}
 		}
 
 		public void initSoundFile(PApplet p, String filename) {
+
+			file.removeFromCache();
 			file = new SoundFile(p, filename);
 			filestring = filename;
 			// file.play();
@@ -535,8 +553,19 @@ public class Ruidoperla extends PApplet {
 			rms.input(file);
 		}
 
+		public SoundFile initThisSound(PApplet p, String filename) {
+
+			// file.removeFromCache();
+			SoundFile thisSound = new SoundFile(p, filename);
+			thisSound.stop();
+
+			return thisSound;
+		}
+
 		public boolean detectBeat() {
-			boolean beat = beatDetector.isBeat();
+//			boolean beat = beatDetector.isBeat();
+
+			boolean beat = beats[index].isBeat();
 			return beat;
 		}
 
@@ -547,10 +576,13 @@ public class Ruidoperla extends PApplet {
 		}
 
 		public void play() {
-			if (!file.isPlaying())
+//			if (!file.isPlaying())
+			if (!sounds[index].isPlaying())
+
 				println("play " + filestring);
-			file.play();
-			file.add(.3f);
+//			file.play();
+			sounds[index].play();
+//			file.add(.3f);
 			active = true;
 		}
 
@@ -568,11 +600,13 @@ public class Ruidoperla extends PApplet {
 		}
 
 		public boolean isPlaying() {
-			boolean p = file.isPlaying();
+//			boolean p = file.isPlaying();
+			boolean p = sounds[index].isPlaying();
+
 			if (!p) {
 				active = false;
-				index++;
-				initSoundFile(parent, filenames[index%filenames.length]);
+				index = (index + 1)%sounds.length;
+//				initSoundFile(parent, filenames[index%filenames.length]);
 			}
 			return p;
 		}
@@ -699,7 +733,7 @@ public class Ruidoperla extends PApplet {
 		} else {
 			String inBuffer = port.readString();
 			if (inBuffer != null) {
-			//	print(inBuffer);
+				// print(inBuffer);
 
 			}
 		}
