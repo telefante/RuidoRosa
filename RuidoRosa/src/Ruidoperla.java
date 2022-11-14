@@ -42,12 +42,12 @@ public class Ruidoperla extends PApplet {
 
 	public static final int WIDTH = 1280;
 	public static final int HEIGHT = 720;
-	private static final float SPEECH_TIME = 30;
-	public static final int BEAT_SENTIVITY = 150;
+	private static final float SPEECH_TIME = 60;
+	public static final int BEAT_SENTIVITY = 30;
 	public static final boolean TEXT2SPEECH = true;
 
 	boolean CAM_ANIM = true;
-	boolean GEOMETRY_ANIM = false;
+	boolean GEOMETRY_ANIM = true;
 	int ANIM_TIME = 30000;
 	boolean TEXT = true;
 	boolean GUI = false;
@@ -507,7 +507,7 @@ public class Ruidoperla extends PApplet {
 //		SoundFile file;
 		SoundFile[] sounds;
 		SoundFile backgroundSound;
-		BeatDetector[] beats;
+		BeatDetector[] beatDetectors;
 //		BeatDetector beatDetector;
 		Amplitude rms;
 		boolean active;
@@ -530,16 +530,16 @@ public class Ruidoperla extends PApplet {
 			actualSound = 0;
 			active = false;
 			sounds = new SoundFile[strings.length];
-			beats = new BeatDetector[strings.length];
+			beatDetectors = new BeatDetector[strings.length];
 			filenames = strings;
 
 			for (int i = 0; i < strings.length; i++) {
 				SoundFile thisSound = new SoundFile(p, filenames[i]);
 				thisSound.stop();
 				sounds[i] = thisSound;
-				beats[i] = new BeatDetector(p);
-				beats[i].input(sounds[i]);
-				beats[i].sensitivity(BEAT_SENTIVITY);
+				beatDetectors[i] = new BeatDetector(p);
+				beatDetectors[i].input(sounds[i]);
+				beatDetectors[i].sensitivity(BEAT_SENTIVITY);
 
 				// PeakAmpltude
 				// Create and patch the rms tracker
@@ -556,7 +556,7 @@ public class Ruidoperla extends PApplet {
 
 		public boolean detectBeat() {
 //			boolean beat = beatDetector.isBeat();
-			boolean beat = beats[actualSound].isBeat();
+			boolean beat = beatDetectors[actualSound].isBeat();
 			return beat;
 		}
 
@@ -590,8 +590,8 @@ public class Ruidoperla extends PApplet {
 		}
 
 		public boolean isPlaying() {
-			
 			boolean p = sounds[actualSound].isPlaying();
+
 			if (!p) {
 				active = false;
 				actualSound = (actualSound + 1) % sounds.length;
@@ -636,7 +636,7 @@ public class Ruidoperla extends PApplet {
 		void fadeOutAfter() {
 			// println("fadeOut");
 			// exec ("say","-v", "Paulina",lines[actualIndex]);
-			if (TEXT2SPEECH)
+			if (TEXT2SPEECH && active)
 				exec("say", "-v", "Kate", lines[actualIndex]);
 			Ani.to(this, fadeOut, sustain, "alpha", 0, Ani.EXPO_IN_OUT, "onEnd:nextLine");
 		}
