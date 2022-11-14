@@ -67,8 +67,9 @@ public class Ruidoperla extends PApplet {
 
 	public static final int WIDTH = 1280;
 	public static final int HEIGHT = 720;
-	private static final float SPEECH_TIME = 4;
-	public static final int BEAT_SENTIVITY = 10;
+	private static final float SPEECH_TIME = 60;
+	public static final int BEAT_SENTIVITY = 20;
+	public static final boolean TEXT2SPEECH = true;
 
 	long nextEvent = 0;
 	int r;
@@ -646,6 +647,9 @@ public class Ruidoperla extends PApplet {
 
 		void fadeOutAfter() {
 			// println("fadeOut");
+			//exec ("say","-v", "Paulina",lines[actualIndex]);
+			if (TEXT2SPEECH) 
+			exec ("say","-v", "Kate",lines[actualIndex]);
 			Ani.to(this, fadeOut, sustain, "alpha", 0, Ani.EXPO_IN_OUT, "onEnd:nextLine");
 		}
 
@@ -664,7 +668,8 @@ public class Ruidoperla extends PApplet {
 			if (actualIndex >= lines.length) {
 				actualIndex = 0;
 			}
-			sustain = lines[actualIndex].length() / 1.5f;
+			sustain = lines[actualIndex].length() / 10.f;
+			
 			// println("sustain: " + sustain);
 			Ani.to(this, fadeIn, 2.f, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
 
