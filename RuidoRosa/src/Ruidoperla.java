@@ -590,13 +590,11 @@ public class Ruidoperla extends PApplet {
 		}
 
 		public boolean isPlaying() {
-//			boolean p = file.isPlaying();
+			
 			boolean p = sounds[actualSound].isPlaying();
-
 			if (!p) {
 				active = false;
 				actualSound = (actualSound + 1) % sounds.length;
-//				initSoundFile(parent, filenames[index%filenames.length]);
 			}
 			return p;
 		}
