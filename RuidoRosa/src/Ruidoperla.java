@@ -123,7 +123,7 @@ public class Ruidoperla extends PApplet {
 	GradientBackground bg;
 
 	Texts textModul;
-	Speech speech;
+	SoundObj soundObject;
 
 	float time;
 
@@ -151,7 +151,7 @@ public class Ruidoperla extends PApplet {
 
 //		INIT VOICE
 //		speech = new Speech(this, "woher.wav");
-		speech = new Speech(this, soundFiles);
+		soundObject = new SoundObj(this, soundFiles);
 
 		// INIT BG
 
@@ -262,7 +262,7 @@ public class Ruidoperla extends PApplet {
 
 		case SILENCE:
 
-			if (speech.detectBeat()) {
+			if (soundObject.detectBeat()) {
 				println("MOVE ROBOT");
 
 				// velocidad y grados
@@ -286,7 +286,7 @@ public class Ruidoperla extends PApplet {
 				endShape();
 			}
 
-			if (!speech.isPlaying()) {
+			if (!soundObject.isPlaying()) {
 				// speech.parar();
 				setState(NOISE);
 
@@ -369,6 +369,7 @@ public class Ruidoperla extends PApplet {
 			falloff = 1.06f;
 
 			textModul.resume();
+			soundObject.backgroundSound.play();
 
 			// in 60 sec setstate SILENCE
 			time = 0;
@@ -386,10 +387,12 @@ public class Ruidoperla extends PApplet {
 
 			textModul.pause();
 
-			speech.play();
+			soundObject.playActualSpeech();
+			soundObject.backgroundSound.stop();
 //			bg.complementeryColors();
 //			bg.tetadricColors();
 			bg.blendColor(3);
+			
 			velocidad = 0;
 			falloff = 0;
 			octava = 0;
@@ -500,10 +503,11 @@ public class Ruidoperla extends PApplet {
 		}
 	}
 
-	class Speech {
+	class SoundObj {
 
 //		SoundFile file;
 		SoundFile[] sounds;
+		SoundFile backgroundSound;
 		BeatDetector[] beats;
 //		BeatDetector beatDetector;
 		Amplitude rms;
@@ -525,7 +529,7 @@ public class Ruidoperla extends PApplet {
 
 		
 
-		Speech(PApplet p, String[] strings) {
+		SoundObj(PApplet p, String[] strings) {
 //			parent = p;
 //			filenames = strings;
 			actualSound = 0;
@@ -548,6 +552,12 @@ public class Ruidoperla extends PApplet {
 //				rms = new Amplitude(p);
 //				rms.input(thisSound);
 			}
+			
+			backgroundSound = new SoundFile(p,"agua.wav");
+			//backgroundSound.play();
+			backgroundSound.loop();
+		backgroundSound.pause();	
+			
 		}
 
 	
@@ -566,7 +576,7 @@ public class Ruidoperla extends PApplet {
 			return sum;
 		}
 
-		public void play() {
+		public void playActualSpeech() {
 //			if (!file.isPlaying())
 			if (!sounds[actualSound].isPlaying())
 
