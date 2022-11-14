@@ -42,7 +42,7 @@ public class Ruidoperla extends PApplet {
 
 	public static final int WIDTH = 1280;
 	public static final int HEIGHT = 720;
-	private static final float SPEECH_TIME = 60;
+	private static final float SPEECH_TIME = 30;
 	public static final int BEAT_SENTIVITY = 150;
 	public static final boolean TEXT2SPEECH = true;
 
@@ -304,9 +304,10 @@ public class Ruidoperla extends PApplet {
 
 		// LOOK
 		fx.render().blur(2, 2.0f)
-				// .chromaticAberration()
+				 //.chromaticAberration()
 				// .vignette(1.0,0.5)
 				.compose();
+		
 
 // Update just to 6 first actor to update height values of geometry
 // the last actors are reserved for Robot Arm 
