@@ -38,12 +38,28 @@ public class Ruidoperla extends PApplet {
 		PApplet.main("Ruidoperla");
 	}
 
+	// SETTINGS
+
+	public static final int WIDTH = 1280;
+	public static final int HEIGHT = 720;
+	private static final float SPEECH_TIME = 60;
+	public static final int BEAT_SENTIVITY = 150;
+	public static final boolean TEXT2SPEECH = true;
+
+	boolean CAM_ANIM = true;
+	boolean GEOMETRY_ANIM = false;
+	int ANIM_TIME = 30000;
+	boolean TEXT = true;
+	boolean GUI = false;
+
 	// STATES
 
 	public static final int NOISE = 0;
 	public static final int SILENCE = 1;
 
 	// int[] states = { NOISE, SILENCE };
+
+	long nextCamAnimationEvent = 0;
 	int actualSTATE;
 
 	// UI
@@ -56,23 +72,7 @@ public class Ruidoperla extends PApplet {
 	PeasyCam cam;
 	CameraState state;
 
-	// Constant zum INIT
-	boolean CAM_ANIM = true;
-	boolean GEOMETRY_ANIM = false;
-	int ANIM_TIME = 30000;
-
-	// VIsualize
-	boolean TEXT = true;
-	boolean GUI = false;
-
-	public static final int WIDTH = 1280;
-	public static final int HEIGHT = 720;
-	private static final float SPEECH_TIME = 60;
-	public static final int BEAT_SENTIVITY = 20;
-	public static final boolean TEXT2SPEECH = true;
-
-	long nextEvent = 0;
-	int r;
+	int camStatesIndex;
 	JSONArray camStatesJSON, camStatesJSONImport;
 	int indexJSON;
 
@@ -161,7 +161,7 @@ public class Ruidoperla extends PApplet {
 
 		frameRate(25);
 		// define camState
-		r = 0;
+		camStatesIndex = 0;
 
 		cam = new PeasyCam(this, 100);
 		cam.setActive(false);
@@ -210,38 +210,6 @@ public class Ruidoperla extends PApplet {
 	@Override
 	public void draw() {
 
-		switch (actualSTATE) {
-		case NOISE:
-
-			break;
-
-		case SILENCE:
-
-			if (speech.detectBeat()) {
-				println("MOVE ROBOT");
-
-				// velocidad y grados
-				moveRobot(0.7f, 90);
-				// poner en pausa audio - activar motor de pan&tilt
-
-			}
-
-			if (!speech.isPlaying()) {
-				// speech.parar();
-				setState(NOISE);
-
-			}
-
-			// println(panRot);
-			pan.rot = panRot;
-			tilt.rot = tiltRot;
-
-			break;
-
-		default:
-			break;
-		}
-
 		bg.draw();
 
 		lights();
@@ -287,6 +255,53 @@ public class Ruidoperla extends PApplet {
 		textSize(48);
 		fill(255);
 
+		switch (actualSTATE) {
+		case NOISE:
+
+			break;
+
+		case SILENCE:
+
+			if (speech.detectBeat()) {
+				println("MOVE ROBOT");
+
+				// velocidad y grados
+				moveRobot(0.7f, 90);
+				// poner en pausa audio - activar motor de pan&tilt
+
+			}
+
+			fill(255, 249, 49, 255);
+			for (int y = 0; y < resY - 1; y++) {
+				// for everysingle row
+				// beginShape(TRIANGLE_STRIP);
+
+				beginShape(QUAD_STRIP);
+				for (int x = 0; x < resX; x++) {
+					vertex(x * scl, y * scl, 0);
+					vertex(x * scl, (y + 1) * scl, 0);
+					// DISPLAY TEXT -
+
+				}
+				endShape();
+			}
+
+			if (!speech.isPlaying()) {
+				// speech.parar();
+				setState(NOISE);
+
+			}
+
+			// println(panRot);
+			pan.rot = panRot;
+			tilt.rot = tiltRot;
+
+			break;
+
+		default:
+			break;
+		}
+
 		// LOOK
 		fx.render().blur(2, 2.0f)
 				// .chromaticAberration()
@@ -324,7 +339,7 @@ public class Ruidoperla extends PApplet {
 
 		// CAM ANIMATIONS
 		if (CAM_ANIM) {
-			if (millis() >= nextEvent) {
+			if (millis() >= nextCamAnimationEvent) {
 				// randomCameraMove();
 				animateCamera();
 			}
@@ -352,7 +367,7 @@ public class Ruidoperla extends PApplet {
 			octava = 2;
 			falloff = 1.06f;
 
-			// textModul.resume();
+			textModul.resume();
 
 			// in 60 sec setstate SILENCE
 			time = 0;
@@ -363,6 +378,7 @@ public class Ruidoperla extends PApplet {
 
 			break;
 
+//			SPEECH activado / los textos se van 
 		case SILENCE:
 
 			println("state switched to SILENCE");
@@ -485,10 +501,10 @@ public class Ruidoperla extends PApplet {
 
 	class Speech {
 
-		SoundFile file;
+//		SoundFile file;
 		SoundFile[] sounds;
 		BeatDetector[] beats;
-		BeatDetector beatDetector;
+//		BeatDetector beatDetector;
 		Amplitude rms;
 		boolean active;
 
@@ -504,25 +520,22 @@ public class Ruidoperla extends PApplet {
 		String filestring;
 		PApplet parent;
 		String[] filenames;
-		int index;
+		int actualSound;
 
-		Speech(PApplet p, String filename) {
-			parent = p;
-			initSoundFile(parent, filename);
-			active = false;
-		}
+		
 
 		Speech(PApplet p, String[] strings) {
 //			parent = p;
 //			filenames = strings;
-			index = 0;
+			actualSound = 0;
 			// initSoundFile(parent, filenames[index]);
 			active = false;
 			sounds = new SoundFile[strings.length];
 			beats = new BeatDetector[strings.length];
+			filenames = strings; 
 
 			for (int i = 0; i < strings.length; i++) {
-				SoundFile thisSound = new SoundFile(p, strings[i]);
+				SoundFile thisSound = new SoundFile(p, filenames[i]);
 				thisSound.stop();
 				sounds[i] = thisSound;
 				beats[i] = new BeatDetector(p);
@@ -536,37 +549,13 @@ public class Ruidoperla extends PApplet {
 			}
 		}
 
-		public void initSoundFile(PApplet p, String filename) {
+	
 
-			file.removeFromCache();
-			file = new SoundFile(p, filename);
-			filestring = filename;
-			// file.play();
-			// file.loop();
-			file.stop();
-			beatDetector = new BeatDetector(p);
-			beatDetector.input(file);
-			beatDetector.sensitivity(BEAT_SENTIVITY);
-
-			// PeakAmpltude
-			// Create and patch the rms tracker
-			rms = new Amplitude(p);
-			rms.input(file);
-		}
-
-		public SoundFile initThisSound(PApplet p, String filename) {
-
-			// file.removeFromCache();
-			SoundFile thisSound = new SoundFile(p, filename);
-			thisSound.stop();
-
-			return thisSound;
-		}
+		
 
 		public boolean detectBeat() {
 //			boolean beat = beatDetector.isBeat();
-
-			boolean beat = beats[index].isBeat();
+			boolean beat = beats[actualSound].isBeat();
 			return beat;
 		}
 
@@ -578,35 +567,35 @@ public class Ruidoperla extends PApplet {
 
 		public void play() {
 //			if (!file.isPlaying())
-			if (!sounds[index].isPlaying())
+			if (!sounds[actualSound].isPlaying())
 
-				println("play " + filestring);
+				println("play " + filenames[actualSound]);
 //			file.play();
-			sounds[index].play();
+			sounds[actualSound].play();
 //			file.add(.3f);
 			active = true;
 		}
 
 		public void comienzo() {
-			file.jump(0);
+			sounds[actualSound].jump(0);
 		}
 
 		public void pausa() {
-			file.pause();
+			sounds[actualSound].pause();
 		}
 
 		public void parar() {
-			file.stop();
+			sounds[actualSound].stop();
 			active = false;
 		}
 
 		public boolean isPlaying() {
 //			boolean p = file.isPlaying();
-			boolean p = sounds[index].isPlaying();
+			boolean p = sounds[actualSound].isPlaying();
 
 			if (!p) {
 				active = false;
-				index = (index + 1)%sounds.length;
+				actualSound = (actualSound + 1) % sounds.length;
 //				initSoundFile(parent, filenames[index%filenames.length]);
 			}
 			return p;
@@ -624,12 +613,13 @@ public class Ruidoperla extends PApplet {
 		float alpha;
 		Ani fadeInAni, fadeOutAni;
 		int fontsize;
+		private boolean active;
 
 		Texts(String file) {
 			x = width * 0.5f;
 			y = height * 0.5f;
 			f = createFont("SourceCodePro-Regular.ttf", 114);
-
+			active = true;
 			lines = loadFile(file);
 			actualIndex = 0;
 			fadeOut = 2.0f;
@@ -647,19 +637,21 @@ public class Ruidoperla extends PApplet {
 
 		void fadeOutAfter() {
 			// println("fadeOut");
-			//exec ("say","-v", "Paulina",lines[actualIndex]);
-			if (TEXT2SPEECH) 
-			exec ("say","-v", "Kate",lines[actualIndex]);
+			// exec ("say","-v", "Paulina",lines[actualIndex]);
+			if (TEXT2SPEECH)
+				exec("say", "-v", "Kate", lines[actualIndex]);
 			Ani.to(this, fadeOut, sustain, "alpha", 0, Ani.EXPO_IN_OUT, "onEnd:nextLine");
 		}
 
 		public void pause() {
-			fadeOutAni = new Ani(this, fadeOut, 0, "alpha", 0, Ani.LINEAR);
+//			fadeOutAni = new Ani(this, fadeOut, 0, "alpha", 0, Ani.LINEAR);
+			active = false;
 		}
 
 		public void resume() {
+			active = true;
 //			Ani.to(this, fadeIn,0, "alpha", 255.f, Ani.EXPO_IN, "onEnd:fadeOutAfter");
-			fadeInAni.repeat();
+			//fadeInAni.repeat();
 		}
 
 		public void nextLine() {
@@ -669,20 +661,24 @@ public class Ruidoperla extends PApplet {
 				actualIndex = 0;
 			}
 			sustain = lines[actualIndex].length() / 10.f;
-			
+
 			// println("sustain: " + sustain);
 			Ani.to(this, fadeIn, 2.f, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
 
 		}
 
 		public void render() {
-			pushMatrix();
-			translate(x, y);
-			textFont(f, fontsize);
-			fill(255, alpha);
-			textAlign(CENTER);
-			text(lines[actualIndex], 0, 0);
-			popMatrix();
+			if (active) {
+
+				pushMatrix();
+				translate(x, y);
+				textFont(f, fontsize);
+				fill(255, alpha);
+				textAlign(CENTER);
+				text(lines[actualIndex], 0, 0);
+				popMatrix();
+			}
+
 			// println(alpha);
 		}
 
@@ -858,31 +854,31 @@ public class Ruidoperla extends PApplet {
 
 	public void animateCamera() {
 
-		if (r >= camStates.size()) {
-			r = 0;
+		if (camStatesIndex >= camStates.size()) {
+			camStatesIndex = 0;
 		}
 
-		cam.setState(camStates.get(r), ANIM_TIME);
-		nextEvent = millis() + ANIM_TIME;
-		r++;
+		cam.setState(camStates.get(camStatesIndex), ANIM_TIME);
+		nextCamAnimationEvent = millis() + ANIM_TIME;
+		camStatesIndex++;
 	}
 
 	public void randomCameraMove() {
 
 		// avanza 1 o 2 cámaras
-		r += (int) random(1, 3);
+		camStatesIndex += (int) random(1, 3);
 		// Si nos pasamos del máx, retrocede una "página"
-		if (r > 2) {
-			r -= 3;
+		if (camStatesIndex > 2) {
+			camStatesIndex -= 3;
 		}
-		if (r == 0) {
+		if (camStatesIndex == 0) {
 			cam.setState(camStates.get(0), 2000);
-		} else if (r == 1) {
+		} else if (camStatesIndex == 1) {
 			cam.setState(camStates.get(1), 2000);
-		} else if (r == 2) {
+		} else if (camStatesIndex == 2) {
 			cam.setState(camStates.get(2), 2000);
 		}
-		nextEvent = millis() + 2000;
+		nextCamAnimationEvent = millis() + 2000;
 		// println(r, cam.getState());
 	}
 
@@ -905,7 +901,7 @@ public class Ruidoperla extends PApplet {
 		text("falloff: " + falloff, 50, height * 0.8f);
 		text("octava: " + octava, 50, height * 0.85f);
 		text("vel: " + velocidad, 50, height * 0.9f);
-		text("cameraAnimation Step: " + r, 50, height * 0.95f);
+		text("cameraAnimation Step: " + camStatesIndex, 50, height * 0.95f);
 
 		// render Actors
 		// text(pos[0], 10, 10);
