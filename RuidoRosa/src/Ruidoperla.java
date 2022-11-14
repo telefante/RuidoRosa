@@ -304,10 +304,9 @@ public class Ruidoperla extends PApplet {
 
 		// LOOK
 		fx.render().blur(2, 2.0f)
-				 //.chromaticAberration()
+				// .chromaticAberration()
 				// .vignette(1.0,0.5)
 				.compose();
-		
 
 // Update just to 6 first actor to update height values of geometry
 // the last actors are reserved for Robot Arm 
@@ -392,7 +391,7 @@ public class Ruidoperla extends PApplet {
 //			bg.complementeryColors();
 //			bg.tetadricColors();
 			bg.blendColor(3);
-			
+
 			velocidad = 0;
 			falloff = 0;
 			octava = 0;
@@ -523,21 +522,16 @@ public class Ruidoperla extends PApplet {
 		// Used for storing the smoothed amplitude value
 		float sum;
 		String filestring;
-		PApplet parent;
 		String[] filenames;
 		int actualSound;
 
-		
-
 		SoundObj(PApplet p, String[] strings) {
-//			parent = p;
-//			filenames = strings;
+
 			actualSound = 0;
-			// initSoundFile(parent, filenames[index]);
 			active = false;
 			sounds = new SoundFile[strings.length];
 			beats = new BeatDetector[strings.length];
-			filenames = strings; 
+			filenames = strings;
 
 			for (int i = 0; i < strings.length; i++) {
 				SoundFile thisSound = new SoundFile(p, filenames[i]);
@@ -552,17 +546,13 @@ public class Ruidoperla extends PApplet {
 //				rms = new Amplitude(p);
 //				rms.input(thisSound);
 			}
-			
-			backgroundSound = new SoundFile(p,"agua.wav");
-			//backgroundSound.play();
+
+			backgroundSound = new SoundFile(p, "agua.wav");
+			// backgroundSound.play();
 			backgroundSound.loop();
-		backgroundSound.pause();	
-			
+			backgroundSound.pause();
+
 		}
-
-	
-
-		
 
 		public boolean detectBeat() {
 //			boolean beat = beatDetector.isBeat();
@@ -577,13 +567,12 @@ public class Ruidoperla extends PApplet {
 		}
 
 		public void playActualSpeech() {
-//			if (!file.isPlaying())
+
 			if (!sounds[actualSound].isPlaying())
 
 				println("play " + filenames[actualSound]);
-//			file.play();
 			sounds[actualSound].play();
-//			file.add(.3f);
+			sounds[actualSound].add(.3f);
 			active = true;
 		}
 
@@ -662,7 +651,7 @@ public class Ruidoperla extends PApplet {
 		public void resume() {
 			active = true;
 //			Ani.to(this, fadeIn,0, "alpha", 255.f, Ani.EXPO_IN, "onEnd:fadeOutAfter");
-			//fadeInAni.repeat();
+			// fadeInAni.repeat();
 		}
 
 		public void nextLine() {
