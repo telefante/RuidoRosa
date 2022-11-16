@@ -42,8 +42,8 @@ public class Ruidoperla extends PApplet {
 
 	public static final int WIDTH = 1280;
 	public static final int HEIGHT = 720;
-	private static final float SPEECH_TIME = 60;
-	public static final int BEAT_SENTIVITY = 30;
+	private static final float SPEECH_TIME = 6;
+	public static final int BEAT_SENTIVITY = 25;
 	public static final boolean TEXT2SPEECH = true;
 
 	boolean CAM_ANIM = true;
