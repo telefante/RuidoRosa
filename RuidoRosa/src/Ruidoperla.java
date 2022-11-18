@@ -43,9 +43,9 @@ public class Ruidoperla extends PApplet {
 
 	public static final int WIDTH = 1280;
 	public static final int HEIGHT = 720;
-	private static final float SPEECH_TIME = 60;
-	public static final int BEAT_SENTIVITY = 25;
-	public static final boolean TEXT2SPEECH = true;
+	private static final float SPEECH_TIME = 5;
+	public static final int BEAT_SENTIVITY = 1;
+	public static final boolean TEXT2SPEECH = false;
 
 	boolean CAM_ANIM = true;
 	boolean GEOMETRY_ANIM = true;
@@ -57,7 +57,8 @@ public class Ruidoperla extends PApplet {
 
 	public static final int NOISE = 0;
 	public static final int SILENCE = 1;
-	private static final int PROBABILITY_SOUNDS = 133;
+	private static final int PROBABILITY_SOUNDS = 166;
+	private static final boolean DEBUG_SERIAL = false;
 
 	// int[] states = { NOISE, SILENCE };
 
@@ -271,7 +272,7 @@ public class Ruidoperla extends PApplet {
 				println("MOVE ROBOT");
 
 				// velocidad y grados
-				moveRobot(0.7f, 90);
+				moveRobot(0.7f, 180);
 				// poner en pausa audio - activar motor de pan&tilt
 
 			}
@@ -355,10 +356,13 @@ public class Ruidoperla extends PApplet {
 		panRot = 0;
 		tiltRot = 0;
 		Ani panAni = new Ani(this, duration, .0f, "panRot", degree, Ani.LINEAR);
-		panAni.setPlayMode(Ani.YOYO);
+		// panAni.setPlayMode(Ani.YOYO);
+		panAni.repeat((int) random(1, 3));
+		Ani tiltAni = new Ani(this, duration, 0.f, "tiltRot", degree, Ani.EXPO_IN_OUT);
+		// tiltAni.setPlayMode(Ani.YOYO);
 
-		Ani tiltAni = new Ani(this, duration, .5f, "tiltRot", degree, Ani.EXPO_IN_OUT);
-		tiltAni.setPlayMode(Ani.YOYO);
+		tiltAni.repeat((int) random(1, 3));
+
 	}
 
 	public void setState(int state) {
@@ -577,20 +581,21 @@ public class Ruidoperla extends PApplet {
 
 		public boolean detectBeat() {
 //			boolean beat = beatDetector.isBeat();
+//			println(actualSound);
 			boolean beat = beatDetectors[actualSound].isBeat();
 			return beat;
 		}
 
 		public void chanceSound(int prob) {
 			probability = (int) random(prob);
-			//println(probability);
-		
+			// println(probability);
+
 			if (random(probability) == 0) {
-				println(chanceIndex);
+				// println(chanceIndex);
 				SoundFile thisSound = chanceSound[chanceIndex];
 				if (!thisSound.isPlaying()) {
 					thisSound.play();
-					println("chance sound! " + thisSound.getClass());
+					println("chance sound! " + thisSound.toString());
 
 				}
 				chanceIndex = (chanceIndex + 1) % chanceSound.length;
@@ -632,6 +637,8 @@ public class Ruidoperla extends PApplet {
 			if (!p) {
 				active = false;
 				actualSound = (actualSound + 1) % speechSounds.length;
+//				beatDetectors[actualSound].input(speechSounds[actualSound]);
+//				beatDetectors[actualSound].sensitivity(BEAT_SENTIVITY);
 			}
 			return p;
 		}
@@ -742,7 +749,9 @@ public class Ruidoperla extends PApplet {
 		println("size of actors Array: " + actors.size());
 
 		// TO move the robot
+//		PIN 8 in ARDUINO 
 		pan = actors.get(6);
+//		PIN 9 in ARDUINO 
 		tilt = actors.get(7);
 	}
 //// SETUP ------------------------------
@@ -769,7 +778,8 @@ public class Ruidoperla extends PApplet {
 		} else {
 			String inBuffer = port.readString();
 			if (inBuffer != null) {
-				// print(inBuffer);
+				if (DEBUG_SERIAL)
+					print(inBuffer);
 
 			}
 		}
@@ -794,7 +804,7 @@ public class Ruidoperla extends PApplet {
 		port.write(str);
 		port.write(13);
 
-		// println(str);
+//		 println(str);
 
 //		}
 	}
@@ -996,6 +1006,14 @@ public class Ruidoperla extends PApplet {
 		if (key == 'g')
 			// bg.randomColors(36);
 			bg.tetadricColors();
+		
+		if ( key == 'q') {
+			println("ESC");
+			port.clear();
+			port.stop();
+			exit(); 
+			
+		}
 	}
 
 	class Actor {
