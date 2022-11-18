@@ -5,7 +5,6 @@ import java.util.Iterator;
 
 import ch.bildspur.postfx.builder.PostFX;
 import controlP5.ControlP5;
-import controlP5.Println;
 import de.looksgood.ani.Ani;
 import de.looksgood.ani.AniSequence;
 import micycle.peasygradients.PeasyGradients;
@@ -43,7 +42,7 @@ public class Ruidoperla extends PApplet {
 
 	public static final int WIDTH = 1280;
 	public static final int HEIGHT = 720;
-	private static final float SPEECH_TIME = 60;
+	private static final float SPEECH_TIME = 6;
 	public static final int BEAT_SENTIVITY = 25;
 	public static final boolean TEXT2SPEECH = true;
 
@@ -57,7 +56,14 @@ public class Ruidoperla extends PApplet {
 
 	public static final int NOISE = 0;
 	public static final int SILENCE = 1;
-	private static final int PROBABILITY_SOUNDS = 133;
+
+	private static final int PROBABILITY_SOUNDS = 200;
+	private static final boolean DEBUG_SERIAL = false;
+	private static final int ROBOT_MAX_ANGLE = 120;
+	private static final float ROBOT_ANIMTIME = 1.f;
+	private static final float ROBOT_REPETION_MIN = 3;
+	private static final float ROBOT_REPETION_MAX = 5;
+
 
 	// int[] states = { NOISE, SILENCE };
 
@@ -129,13 +135,12 @@ public class Ruidoperla extends PApplet {
 
 	float time;
 
-	float panRot = 0;
+	float panRot = 30;
 	float tiltRot = 0;
 
 	Actor pan, tilt;
 
-	String[] speechFiles = { "hey.wav", "woher.wav" };
-	String[] chanceFiles = { "621612__strangehorizon__sabian-20-ride-2.wav", "violin-bow-on-cymbal-a.wav" };
+	String[] soundFiles = { "hey.wav", "woher.wav" };
 
 	// method used only for setting the size of the window
 	public void settings() {
@@ -154,7 +159,7 @@ public class Ruidoperla extends PApplet {
 
 //		INIT VOICE
 //		speech = new Speech(this, "woher.wav");
-		soundObject = new SoundObj(this, speechFiles, chanceFiles);
+		soundObject = new SoundObj(this, soundFiles);
 
 		// INIT BG
 
@@ -261,8 +266,6 @@ public class Ruidoperla extends PApplet {
 		switch (actualSTATE) {
 		case NOISE:
 
-			soundObject.chanceSound(PROBABILITY_SOUNDS);
-
 			break;
 
 		case SILENCE:
@@ -271,8 +274,11 @@ public class Ruidoperla extends PApplet {
 				println("MOVE ROBOT");
 
 				// velocidad y grados
-				moveRobot(0.7f, 90);
+
+				moveRobot(ROBOT_ANIMTIME, ROBOT_MAX_ANGLE);
+
 				// poner en pausa audio - activar motor de pan&tilt
+				
 
 			}
 
@@ -307,7 +313,6 @@ public class Ruidoperla extends PApplet {
 			break;
 		}
 
-		// LOOK
 		fx.render().blur(2, 2.0f)
 				// .chromaticAberration()
 				// .vignette(1.0,0.5)
@@ -353,12 +358,19 @@ public class Ruidoperla extends PApplet {
 
 	public void moveRobot(float duration, int degree) {
 		panRot = 0;
+		
 		tiltRot = 0;
 		Ani panAni = new Ani(this, duration, .0f, "panRot", degree, Ani.LINEAR);
-		panAni.setPlayMode(Ani.YOYO);
 
-		Ani tiltAni = new Ani(this, duration, .5f, "tiltRot", degree, Ani.EXPO_IN_OUT);
-		tiltAni.setPlayMode(Ani.YOYO);
+		// panAni.setPlayMode(Ani.YOYO);
+		panAni.repeat((int) random(ROBOT_REPETION_MIN, ROBOT_REPETION_MAX));
+		Ani tiltAni = new Ani(this, duration, 0.f, "tiltRot", degree, Ani.EXPO_IN_OUT);
+		// tiltAni.setPlayMode(Ani.YOYO);
+
+		tiltAni.repeat((int) random(ROBOT_REPETION_MIN, ROBOT_REPETION_MAX));
+
+		
+//		tiltAni.setPlayMode(Ani.YOYO);
 	}
 
 	public void setState(int state) {
@@ -510,13 +522,11 @@ public class Ruidoperla extends PApplet {
 	class SoundObj {
 
 //		SoundFile file;
-		SoundFile[] speechSounds;
+		SoundFile[] sounds;
 		SoundFile backgroundSound;
-		SoundFile[] chanceSound;
-		int probability, chanceIndex;
-
 		BeatDetector[] beatDetectors;
 //		BeatDetector beatDetector;
+		Amplitude rms;
 		boolean active;
 
 		// Declare a smooth factor to smooth out sudden changes in amplitude.
@@ -524,48 +534,34 @@ public class Ruidoperla extends PApplet {
 		// visualisation, which can lead to very abrupt changes. As you decrease the
 		// smooth factor towards 0, the measured amplitudes are averaged across frames,
 		// leading to more pleasant gradual changes
-
-		// Amplitude rms;
-		// float smoothingFactor = 0.25f;
+		float smoothingFactor = 0.25f;
 
 		// Used for storing the smoothed amplitude value
-		// float sum;
-		// String filestring;
-		String[] speechSoundfilenames;
-		String[] chanceSoundFilenames;
+		float sum;
+		String filestring;
+		String[] filenames;
 		int actualSound;
 
-		SoundObj(PApplet p, String[] speechSoundFilenames, String[] chanceSoundsFilenames) {
+		SoundObj(PApplet p, String[] strings) {
 
 			actualSound = 0;
 			active = false;
-			chanceIndex = 0;
+			sounds = new SoundFile[strings.length];
+			beatDetectors = new BeatDetector[strings.length];
+			filenames = strings;
 
-			speechSounds = new SoundFile[speechSoundFilenames.length];
-			beatDetectors = new BeatDetector[speechSoundFilenames.length];
-			chanceSound = new SoundFile[chanceSoundsFilenames.length];
-
-			speechSoundfilenames = speechSoundFilenames;
-			chanceSoundFilenames = chanceSoundsFilenames;
-
-			for (int i = 0; i < speechSoundFilenames.length; i++) {
-				SoundFile thisSound = new SoundFile(p, speechSoundfilenames[i]);
+			for (int i = 0; i < strings.length; i++) {
+				SoundFile thisSound = new SoundFile(p, filenames[i]);
 				thisSound.stop();
-				speechSounds[i] = thisSound;
+				sounds[i] = thisSound;
 				beatDetectors[i] = new BeatDetector(p);
-				beatDetectors[i].input(speechSounds[i]);
+				beatDetectors[i].input(sounds[i]);
 				beatDetectors[i].sensitivity(BEAT_SENTIVITY);
 
 				// PeakAmpltude
 				// Create and patch the rms tracker
 //				rms = new Amplitude(p);
 //				rms.input(thisSound);
-			}
-
-			for (int i = 0; i < chanceSoundsFilenames.length; i++) {
-				chanceSound[i] = new SoundFile(p, chanceSoundsFilenames[i]);
-				chanceSound[i].stop();
-
 			}
 
 			backgroundSound = new SoundFile(p, "agua.wav");
@@ -581,57 +577,41 @@ public class Ruidoperla extends PApplet {
 			return beat;
 		}
 
-		public void chanceSound(int prob) {
-			probability = (int) random(prob);
-			//println(probability);
-		
-			if (random(probability) == 0) {
-				println(chanceIndex);
-				SoundFile thisSound = chanceSound[chanceIndex];
-				if (!thisSound.isPlaying()) {
-					thisSound.play();
-					println("chance sound! " + thisSound.getClass());
-
-				}
-				chanceIndex = (chanceIndex + 1) % chanceSound.length;
-			}
+		public float peakAmplitude() {
+			// smooth the rms data by smoothing factor
+			sum += (rms.analyze() - sum) * smoothingFactor;
+			return sum;
 		}
-
-//		public float peakAmplitude() {
-//			// smooth the rms data by smoothing factor
-//			sum += (rms.analyze() - sum) * smoothingFactor;
-//			return sum;
-//		}
 
 		public void playActualSpeech() {
 
-			if (!speechSounds[actualSound].isPlaying())
+			if (!sounds[actualSound].isPlaying())
 
-				println("play " + speechSoundfilenames[actualSound]);
-			speechSounds[actualSound].play();
-			speechSounds[actualSound].add(.3f);
+				println("play " + filenames[actualSound]);
+			sounds[actualSound].play();
+			sounds[actualSound].add(.3f);
 			active = true;
 		}
 
 		public void comienzo() {
-			speechSounds[actualSound].jump(0);
+			sounds[actualSound].jump(0);
 		}
 
 		public void pausa() {
-			speechSounds[actualSound].pause();
+			sounds[actualSound].pause();
 		}
 
 		public void parar() {
-			speechSounds[actualSound].stop();
+			sounds[actualSound].stop();
 			active = false;
 		}
 
 		public boolean isPlaying() {
-			boolean p = speechSounds[actualSound].isPlaying();
+			boolean p = sounds[actualSound].isPlaying();
 
 			if (!p) {
 				active = false;
-				actualSound = (actualSound + 1) % speechSounds.length;
+				actualSound = (actualSound + 1) % sounds.length;
 			}
 			return p;
 		}
@@ -996,6 +976,24 @@ public class Ruidoperla extends PApplet {
 		if (key == 'g')
 			// bg.randomColors(36);
 			bg.tetadricColors();
+
+		if ( key == 'q') {
+			
+			closeSerial();
+			
+			exit(); 
+			
+		}
+
+	}
+
+	public void closeSerial() {
+		port.clear();
+		port.stop();
+		port = null;
+		if ( port == null) {
+			println("connection clear and stopped");
+		}
 	}
 
 	class Actor {
