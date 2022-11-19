@@ -57,20 +57,28 @@ public class Ruidoperla extends PApplet {
 	public static final int NOISE = 0;
 	public static final int SILENCE = 1;
 
+	private static final int PROBABILITY_SOUNDS = 200;
+	private static final boolean DEBUG_SERIAL = false;
+	private static final int ROBOT_MAX_ANGLE = 120;
+	private static final float ROBOT_ANIMTIME = 1.f;
+	private static final float ROBOT_REPETION_MIN = 3;
+	private static final float ROBOT_REPETION_MAX = 5;
+
+
 	// int[] states = { NOISE, SILENCE };
 
 	long nextCamAnimationEvent = 0;
 	int actualSTATE;
 
 	// UI
-	ControlP5 cp5;
+	ControlP5 controlsP5;
 
 	PostFX fx;
 
 	// CAMERAS
 	// Initializing the cameraStates
 	PeasyCam cam;
-	CameraState state;
+	CameraState camState;
 
 	int camStatesIndex;
 	JSONArray camStatesJSON, camStatesJSONImport;
@@ -86,7 +94,7 @@ public class Ruidoperla extends PApplet {
 
 	Serial port; // Create object from Serial class
 	float mx = 0.0f;
-	boolean firstContact;
+	boolean serialFirstContact;
 
 	// GEOMETRY
 	/// - ---------
@@ -122,12 +130,12 @@ public class Ruidoperla extends PApplet {
 	String[] texts;
 	GradientBackground bg;
 
-	Texts textModul;
+	Texts textObject;
 	SoundObj soundObject;
 
 	float time;
 
-	float panRot = 0;
+	float panRot = 30;
 	float tiltRot = 0;
 
 	Actor pan, tilt;
@@ -147,7 +155,7 @@ public class Ruidoperla extends PApplet {
 
 		// INIT TEXT
 
-		textModul = new Texts("pearlinnoise.txt");
+		textObject = new Texts("pearlinnoise.txt");
 
 //		INIT VOICE
 //		speech = new Speech(this, "woher.wav");
@@ -166,7 +174,7 @@ public class Ruidoperla extends PApplet {
 		cam = new PeasyCam(this, 100);
 		cam.setActive(false);
 		cam.setWheelScale(0.2);
-		state = cam.getState();
+		camState = cam.getState();
 
 		// visualiza los GUI y actores
 		armarGUI();
@@ -191,7 +199,7 @@ public class Ruidoperla extends PApplet {
 		// Instead of 0 input the index number of the port you are using:
 		// String port = findPort();
 		port = new Serial(this, Serial.list()[1], 115200);
-		firstContact = false;
+		serialFirstContact = false;
 		// Whether we've heard from the
 		// microcontroller;
 
@@ -266,8 +274,11 @@ public class Ruidoperla extends PApplet {
 				println("MOVE ROBOT");
 
 				// velocidad y grados
-				moveRobot(0.7f, 90);
+
+				moveRobot(ROBOT_ANIMTIME, ROBOT_MAX_ANGLE);
+
 				// poner en pausa audio - activar motor de pan&tilt
+				
 
 			}
 
@@ -302,7 +313,6 @@ public class Ruidoperla extends PApplet {
 			break;
 		}
 
-		// LOOK
 		fx.render().blur(2, 2.0f)
 				// .chromaticAberration()
 				// .vignette(1.0,0.5)
@@ -326,12 +336,12 @@ public class Ruidoperla extends PApplet {
 		cam.beginHUD();
 
 		if (TEXT) {
-			textModul.render();
+			textObject.render();
 		}
 		cam.endHUD();
 		hint(ENABLE_DEPTH_TEST);
 
-		if (firstContact && !actors.isEmpty()) {
+		if (serialFirstContact && !actors.isEmpty()) {
 			// if (port.available() > 0){
 			sendRotationFromActorsOverSerial();
 			// }
@@ -348,12 +358,19 @@ public class Ruidoperla extends PApplet {
 
 	public void moveRobot(float duration, int degree) {
 		panRot = 0;
+		
 		tiltRot = 0;
 		Ani panAni = new Ani(this, duration, .0f, "panRot", degree, Ani.LINEAR);
-		panAni.setPlayMode(Ani.YOYO);
 
-		Ani tiltAni = new Ani(this, duration, .5f, "tiltRot", degree, Ani.EXPO_IN_OUT);
-		tiltAni.setPlayMode(Ani.YOYO);
+		// panAni.setPlayMode(Ani.YOYO);
+		panAni.repeat((int) random(ROBOT_REPETION_MIN, ROBOT_REPETION_MAX));
+		Ani tiltAni = new Ani(this, duration, 0.f, "tiltRot", degree, Ani.EXPO_IN_OUT);
+		// tiltAni.setPlayMode(Ani.YOYO);
+
+		tiltAni.repeat((int) random(ROBOT_REPETION_MIN, ROBOT_REPETION_MAX));
+
+		
+//		tiltAni.setPlayMode(Ani.YOYO);
 	}
 
 	public void setState(int state) {
@@ -367,7 +384,7 @@ public class Ruidoperla extends PApplet {
 			octava = 2;
 			falloff = 1.06f;
 
-			textModul.resume();
+			textObject.resume();
 			soundObject.backgroundSound.play();
 
 			// in 60 sec setstate SILENCE
@@ -384,7 +401,7 @@ public class Ruidoperla extends PApplet {
 
 			println("state switched to SILENCE");
 
-			textModul.pause();
+			textObject.pause();
 
 			soundObject.playActualSpeech();
 			soundObject.backgroundSound.stop();
@@ -720,12 +737,12 @@ public class Ruidoperla extends PApplet {
 		//
 
 		// port.bufferUntil(10);
-		if (!firstContact) {
+		if (!serialFirstContact) {
 			// read a byte from the serial port:
 			int inByte = port.read();
 			if (inByte == 'X') {
 				// port.clear(); // clear the serial port buffer
-				firstContact = true; // you've had first contact from the
+				serialFirstContact = true; // you've had first contact from the
 				// microcontroller
 				println("connected to : " + port);
 			}
@@ -884,7 +901,7 @@ public class Ruidoperla extends PApplet {
 
 		hint(DISABLE_DEPTH_TEST);
 		cam.beginHUD();
-		cp5.draw();
+		controlsP5.draw();
 
 		textSize(48);
 		fill(255);
@@ -914,7 +931,7 @@ public class Ruidoperla extends PApplet {
 		if (key == '2')
 			cam.setActive(false);
 		if (key == 's') {
-			state = cam.getState();
+			camState = cam.getState();
 			float[] pos = cam.getPosition();
 			// println("position : " + pos[0] + "," + pos[1] + "," + pos[2]);
 
@@ -950,7 +967,7 @@ public class Ruidoperla extends PApplet {
 			saveJSONArray(camStatesJSON, "data / camStates.json");
 		}
 		if (key == 'r')
-			cam.setState(state, 1000);
+			cam.setState(camState, 1000);
 		if (key == 't')
 			TEXT = !TEXT;
 		if (key == 'a')
@@ -959,6 +976,24 @@ public class Ruidoperla extends PApplet {
 		if (key == 'g')
 			// bg.randomColors(36);
 			bg.tetadricColors();
+
+		if ( key == 'q') {
+			
+			closeSerial();
+			
+			exit(); 
+			
+		}
+
+	}
+
+	public void closeSerial() {
+		port.clear();
+		port.stop();
+		port = null;
+		if ( port == null) {
+			println("connection clear and stopped");
+		}
 	}
 
 	class Actor {
@@ -1089,17 +1124,17 @@ public class Ruidoperla extends PApplet {
 
 	public void armarGUI() {
 		// CTRL
-		cp5 = new ControlP5(this);
-		cp5.addSlider("octava").setPosition(50, 50).setRange(0, 8).setId(1);
-		cp5.addSlider("falloff").setPosition(50, 70).setRange(0, 1.5f).setId(2);
-		cp5.addSlider("velocidad").setPosition(50, 90).setRange(0, 20).setId(3);
-		cp5.addSlider("scl").setPosition(50, 110).setRange(10, 1000).setId(4);
-		cp5.setAutoDraw(false);
+		controlsP5 = new ControlP5(this);
+		controlsP5.addSlider("octava").setPosition(50, 50).setRange(0, 8).setId(1);
+		controlsP5.addSlider("falloff").setPosition(50, 70).setRange(0, 1.5f).setId(2);
+		controlsP5.addSlider("velocidad").setPosition(50, 90).setRange(0, 20).setId(3);
+		controlsP5.addSlider("scl").setPosition(50, 110).setRange(10, 1000).setId(4);
+		controlsP5.setAutoDraw(false);
 
-		cp5.getController("octava").getCaptionLabel().setColor(color(255, 0, 0));
-		cp5.getController("falloff").getCaptionLabel().setColor(color(255, 0, 0));
-		cp5.getController("velocidad").getCaptionLabel().setColor(color(255, 0, 0));
-		cp5.getController("scl").getCaptionLabel().setColor(color(255, 0, 0));
+		controlsP5.getController("octava").getCaptionLabel().setColor(color(255, 0, 0));
+		controlsP5.getController("falloff").getCaptionLabel().setColor(color(255, 0, 0));
+		controlsP5.getController("velocidad").getCaptionLabel().setColor(color(255, 0, 0));
+		controlsP5.getController("scl").getCaptionLabel().setColor(color(255, 0, 0));
 
 	}
 
