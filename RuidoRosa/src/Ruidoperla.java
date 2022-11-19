@@ -273,14 +273,9 @@ public class Ruidoperla extends PApplet {
 		case SILENCE:
 
 			if (soundObject.detectBeat()) {
-				println("MOVE ROBOT");
-
+				println("beat detected!");
 				// velocidad y grados
-
 				moveRobot(ROBOT_ANIMTIME, ROBOT_MAX_ANGLE);
-
-				// poner en pausa audio - activar motor de pan&tilt
-				
 
 			}
 
@@ -786,8 +781,9 @@ public class Ruidoperla extends PApplet {
 			}
 		} else {
 			String inBuffer = port.readString();
-			if (inBuffer != null) {
-				// print(inBuffer);
+			if (inBuffer != null ) {
+				if(DEBUG_SERIAL)
+				 println(inBuffer);
 
 			}
 		}
