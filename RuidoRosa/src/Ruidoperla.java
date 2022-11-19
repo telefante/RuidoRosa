@@ -1,11 +1,11 @@
 
 //import java.io.Serial;
 import java.util.ArrayList;
-import java.util.Iterator;
+//import java.util.Iterator;
 
 import ch.bildspur.postfx.builder.PostFX;
 import controlP5.ControlP5;
-import controlP5.Println;
+//import controlP5.Println;
 import de.looksgood.ani.Ani;
 import de.looksgood.ani.AniSequence;
 import micycle.peasygradients.PeasyGradients;
@@ -44,7 +44,7 @@ public class Ruidoperla extends PApplet {
 	public static final int WIDTH = 1280;
 	public static final int HEIGHT = 720;
 	private static final float SPEECH_TIME = 5;
-	public static final int BEAT_SENTIVITY = 1;
+	public static final int BEAT_SENTIVITY = 5;
 	public static final boolean TEXT2SPEECH = false;
 
 	boolean CAM_ANIM = true;
@@ -59,8 +59,6 @@ public class Ruidoperla extends PApplet {
 	public static final int SILENCE = 1;
 	private static final int PROBABILITY_SOUNDS = 166;
 	private static final boolean DEBUG_SERIAL = false;
-
-	// int[] states = { NOISE, SILENCE };
 
 	long nextCamAnimationEvent = 0;
 	int actualSTATE;
@@ -85,7 +83,7 @@ public class Ruidoperla extends PApplet {
 	AniSequence seq;
 
 // FONTS
-	PFont f;
+	PFont font;
 
 	Serial port; // Create object from Serial class
 	float mx = 0.0f;
@@ -137,7 +135,7 @@ public class Ruidoperla extends PApplet {
 
 	String[] speechFiles = { "hey.wav", "woher.wav" };
 	String[] chanceFiles = { "violin-bow-on-cymbal-a.wav" };
-	private String[] crashs = { "621612__strangehorizon__sabian-20-ride-2.wav" };
+	private String[] crashs = { "270138__theriavirra__02-ride-silent-cymbals-snares.wav","621612__strangehorizon__sabian-20-ride-2.wav" };
 
 	// method used only for setting the size of the window
 	public void settings() {
@@ -201,7 +199,7 @@ public class Ruidoperla extends PApplet {
 		// microcontroller;
 
 		// FONT
-		f = createFont("SourceCodePro-Regular.ttf", 114);
+		font = createFont("SourceCodePro-Regular.ttf", 114);
 
 		// JSON CAMStates
 		importCameraAnimation("camStates.json");
