@@ -137,7 +137,7 @@ public class Ruidoperla extends PApplet {
 
 	String[] speechFiles = { "hey.wav", "woher.wav" };
 	String[] chanceFiles = { "violin-bow-on-cymbal-a.wav" };
-	private String[] crashs = {"621612__strangehorizon__sabian-20-ride-2.wav"};
+	private String[] crashs = { "621612__strangehorizon__sabian-20-ride-2.wav" };
 
 	// method used only for setting the size of the window
 	public void settings() {
@@ -395,7 +395,7 @@ public class Ruidoperla extends PApplet {
 			println("state switched to SILENCE");
 
 			textObject.pause();
-
+			soundObject.crash();
 			soundObject.playActualSpeech();
 			soundObject.backgroundSound.stop();
 //			bg.complementeryColors();
@@ -519,9 +519,8 @@ public class Ruidoperla extends PApplet {
 		SoundFile backgroundSound;
 		SoundFile[] chanceSound;
 		SoundFile[] crashSounds;
-		
+
 		int probability, chanceIndex;
-		
 
 		BeatDetector[] beatDetectors;
 //		BeatDetector beatDetector;
@@ -544,18 +543,25 @@ public class Ruidoperla extends PApplet {
 		String[] crashSoundFilenames;
 
 		int actualSound;
+		private int crashIndex;
 
-		SoundObj(PApplet p, String[] _speechSoundFilenames, String[] _chanceSoundsFilenames, String[] _crashSoundsFilenames) {
+		SoundObj(PApplet p, String[] _speechSoundFilenames, String[] _chanceSoundsFilenames,
+				String[] _crashSoundFilenames) {
 
 			actualSound = 0;
 			active = false;
 			chanceIndex = 0;
-
-			crashSoundFilenames = _crashSoundsFilenames;
+			crashIndex = 0;
 			
+			
+
+			crashSoundFilenames = _crashSoundFilenames;
+
 			speechSounds = new SoundFile[_speechSoundFilenames.length];
 			beatDetectors = new BeatDetector[_speechSoundFilenames.length];
 			chanceSound = new SoundFile[_chanceSoundsFilenames.length];
+			crashSounds = new SoundFile[crashSoundFilenames.length];
+			
 
 			speechSoundfilenames = _speechSoundFilenames;
 			chanceSoundFilenames = _chanceSoundsFilenames;
@@ -577,9 +583,14 @@ public class Ruidoperla extends PApplet {
 			for (int i = 0; i < _chanceSoundsFilenames.length; i++) {
 				chanceSound[i] = new SoundFile(p, _chanceSoundsFilenames[i]);
 				chanceSound[i].stop();
-
 			}
 
+			
+			for (int i = 0; i < _crashSoundFilenames.length; i++) {
+				crashSounds[i] = new SoundFile(p, _crashSoundFilenames[i]);
+								
+			}
+			
 			backgroundSound = new SoundFile(p, "agua.wav");
 			// backgroundSound.play();
 			backgroundSound.loop();
@@ -607,6 +618,15 @@ public class Ruidoperla extends PApplet {
 
 				}
 				chanceIndex = (chanceIndex + 1) % chanceSound.length;
+			}
+		}
+
+		public void crash() {
+
+			SoundFile thisSound = crashSounds[crashIndex];
+			if (!thisSound.isPlaying()) {
+				thisSound.play();
+				crashIndex = (crashIndex + 1) % crashSounds.length;
 			}
 		}
 
@@ -1014,13 +1034,13 @@ public class Ruidoperla extends PApplet {
 		if (key == 'g')
 			// bg.randomColors(36);
 			bg.tetadricColors();
-		
-		if ( key == 'q') {
+
+		if (key == 'q') {
 			println("ESC");
 			port.clear();
 			port.stop();
-			exit(); 
-			
+			exit();
+
 		}
 	}
 
