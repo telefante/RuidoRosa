@@ -136,7 +136,8 @@ public class Ruidoperla extends PApplet {
 	Actor pan, tilt;
 
 	String[] speechFiles = { "hey.wav", "woher.wav" };
-	String[] chanceFiles = { "621612__strangehorizon__sabian-20-ride-2.wav", "violin-bow-on-cymbal-a.wav" };
+	String[] chanceFiles = { "violin-bow-on-cymbal-a.wav" };
+	private String[] crashs = {"621612__strangehorizon__sabian-20-ride-2.wav"};
 
 	// method used only for setting the size of the window
 	public void settings() {
@@ -155,7 +156,7 @@ public class Ruidoperla extends PApplet {
 
 //		INIT VOICE
 //		speech = new Speech(this, "woher.wav");
-		soundObject = new SoundObj(this, speechFiles, chanceFiles);
+		soundObject = new SoundObj(this, speechFiles, chanceFiles, crashs);
 
 		// INIT BG
 
@@ -517,7 +518,10 @@ public class Ruidoperla extends PApplet {
 		SoundFile[] speechSounds;
 		SoundFile backgroundSound;
 		SoundFile[] chanceSound;
+		SoundFile[] crashSounds;
+		
 		int probability, chanceIndex;
+		
 
 		BeatDetector[] beatDetectors;
 //		BeatDetector beatDetector;
@@ -537,22 +541,26 @@ public class Ruidoperla extends PApplet {
 		// String filestring;
 		String[] speechSoundfilenames;
 		String[] chanceSoundFilenames;
+		String[] crashSoundFilenames;
+
 		int actualSound;
 
-		SoundObj(PApplet p, String[] speechSoundFilenames, String[] chanceSoundsFilenames) {
+		SoundObj(PApplet p, String[] _speechSoundFilenames, String[] _chanceSoundsFilenames, String[] _crashSoundsFilenames) {
 
 			actualSound = 0;
 			active = false;
 			chanceIndex = 0;
 
-			speechSounds = new SoundFile[speechSoundFilenames.length];
-			beatDetectors = new BeatDetector[speechSoundFilenames.length];
-			chanceSound = new SoundFile[chanceSoundsFilenames.length];
+			crashSoundFilenames = _crashSoundsFilenames;
+			
+			speechSounds = new SoundFile[_speechSoundFilenames.length];
+			beatDetectors = new BeatDetector[_speechSoundFilenames.length];
+			chanceSound = new SoundFile[_chanceSoundsFilenames.length];
 
-			speechSoundfilenames = speechSoundFilenames;
-			chanceSoundFilenames = chanceSoundsFilenames;
+			speechSoundfilenames = _speechSoundFilenames;
+			chanceSoundFilenames = _chanceSoundsFilenames;
 
-			for (int i = 0; i < speechSoundFilenames.length; i++) {
+			for (int i = 0; i < _speechSoundFilenames.length; i++) {
 				SoundFile thisSound = new SoundFile(p, speechSoundfilenames[i]);
 				thisSound.stop();
 				speechSounds[i] = thisSound;
@@ -566,8 +574,8 @@ public class Ruidoperla extends PApplet {
 //				rms.input(thisSound);
 			}
 
-			for (int i = 0; i < chanceSoundsFilenames.length; i++) {
-				chanceSound[i] = new SoundFile(p, chanceSoundsFilenames[i]);
+			for (int i = 0; i < _chanceSoundsFilenames.length; i++) {
+				chanceSound[i] = new SoundFile(p, _chanceSoundsFilenames[i]);
 				chanceSound[i].stop();
 
 			}
