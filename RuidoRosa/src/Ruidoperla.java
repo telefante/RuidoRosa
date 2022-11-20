@@ -46,6 +46,11 @@ public class Ruidoperla extends PApplet {
 	private static final float SPEECH_TIME = 5;
 	public static final int BEAT_SENTIVITY = 1;
 	public static final boolean TEXT2SPEECH = false;
+	private static final int ROBOT_MAX_ANGLE = 120;
+	private static final float ROBOT_ANIMTIME = 1.f;
+	private static final float ROBOT_REPETION_MIN = 3;
+	private static final float ROBOT_REPETION_MAX = 5;
+
 
 	boolean CAM_ANIM = true;
 	boolean GEOMETRY_ANIM = true;
@@ -273,7 +278,9 @@ public class Ruidoperla extends PApplet {
 				println("MOVE ROBOT");
 
 				// velocidad y grados
-				moveRobot(0.7f, 180);
+//				moveRobot(0.7f, 180);
+				moveRobot(ROBOT_ANIMTIME, ROBOT_MAX_ANGLE);
+
 				// poner en pausa audio - activar motor de pan&tilt
 
 			}
@@ -358,11 +365,14 @@ public class Ruidoperla extends PApplet {
 		tiltRot = 0;
 		Ani panAni = new Ani(this, duration, .0f, "panRot", degree, Ani.LINEAR);
 		// panAni.setPlayMode(Ani.YOYO);
-		panAni.repeat((int) random(1, 3));
+		panAni.repeat((int) random(ROBOT_REPETION_MIN, ROBOT_REPETION_MAX));
+
 		Ani tiltAni = new Ani(this, duration, 0.f, "tiltRot", degree, Ani.EXPO_IN_OUT);
 		// tiltAni.setPlayMode(Ani.YOYO);
 
-		tiltAni.repeat((int) random(1, 3));
+		tiltAni.repeat((int) random(ROBOT_REPETION_MIN, ROBOT_REPETION_MAX));
+
+
 
 	}
 
