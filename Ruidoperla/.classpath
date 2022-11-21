@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="data"/>
+	<classpathentry kind="lib" path="/Users/master/Documents/Processing 3/libraries/peasyGradients/library/peasyGradients.jar"/>
+	<classpathentry kind="lib" path="/Users/master/Documents/Processing 3/libraries/peasycam/library/peasycam.jar"/>
+	<classpathentry kind="lib" path="/Users/master/Documents/Processing 3/libraries/peasycam/library/peasy-math.jar"/>
+	<classpathentry kind="lib" path="/Users/master/Documents/Processing 3/libraries/Ani/library/Ani.jar"/>
+	<classpathentry kind="lib" path="/Users/master/Documents/Processing 3/libraries/controlP5/library/controlP5.jar"/>
+	<classpathentry kind="lib" path="/Users/master/Documents/Processing 3/libraries/PostFX/library/PostFX.jar" sourcepath="/Users/master/Documents/Processing 3/libraries/PostFX/library/shader"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/Java [1.8.231.11]"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/Processing3"/>
+	<classpathentry kind="lib" path="/Applications/Processing 3.app/Contents/Java/modes/java/libraries/serial/library/serial.jar"/>
+	<classpathentry kind="lib" path="/Applications/Processing 3.app/Contents/Java/modes/java/libraries/serial/library/jssc.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/sound"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
