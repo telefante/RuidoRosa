@@ -35,6 +35,10 @@ import processing.serial.*;
 
 public class Ruidoperla extends PApplet {
 
+	private static final int NUM_RASSEL_ROBOTS = 4;
+	private static final int TILT_ACTOR_PIN = 4;
+	private static final int PAN_ACTOR_PIN = 5;
+
 	public static void main(String[] args) {
 		PApplet.main("Ruidoperla");
 	}
@@ -43,7 +47,7 @@ public class Ruidoperla extends PApplet {
 
 	public static final int WIDTH = 1280;
 	public static final int HEIGHT = 720;
-	private static final float SPEECH_TIME = 5;
+	private static final float SPEECH_TIME = 50;
 	public static final int BEAT_SENTIVITY = 1;
 	public static final boolean TEXT2SPEECH = false;
 	private static final int ROBOT_MAX_ANGLE = 120;
@@ -53,7 +57,7 @@ public class Ruidoperla extends PApplet {
 
 
 	boolean CAM_ANIM = true;
-	boolean GEOMETRY_ANIM = true;
+	boolean GEOMETRY_ANIM = false;
 	int ANIM_TIME = 30000;
 	boolean TEXT = true;
 	boolean GUI = false;
@@ -142,7 +146,7 @@ public class Ruidoperla extends PApplet {
 
 	String[] speechFiles = { "hey.wav", "woher.wav" };
 	String[] chanceFiles = { "violin-bow-on-cymbal-a.wav" };
-	private String[] crashs = { "621612__strangehorizon__sabian-20-ride-2.wav" };
+	String[] crashs = {"270138__theriavirra__02-ride-silent-cymbals-snares.wav", "621612__strangehorizon__sabian-20-ride-2.wav" };
 
 	// method used only for setting the size of the window
 	public void settings() {
@@ -325,7 +329,7 @@ public class Ruidoperla extends PApplet {
 // Update just to 6 first actor to update height values of geometry
 // the last actors are reserved for Robot Arm 
 		// los primeros 6 pines reservados para las maracas en el piso
-		for (int i = 0; i < 6; i++) {
+		for (int i = 0; i < NUM_RASSEL_ROBOTS; i++) {
 			actors.get(i).update();
 		}
 
@@ -788,9 +792,9 @@ public class Ruidoperla extends PApplet {
 
 		// TO move the robot
 //		PIN 8 in ARDUINO 
-		pan = actors.get(6);
+		pan = actors.get(PAN_ACTOR_PIN);
 //		PIN 9 in ARDUINO 
-		tilt = actors.get(7);
+		tilt = actors.get(TILT_ACTOR_PIN);
 	}
 //// SETUP ------------------------------
 /// - - - - - - - - - - - - - - - - - - -
