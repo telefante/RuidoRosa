@@ -48,17 +48,23 @@ public class Ruidoperla extends PApplet {
 
 	public static final int WIDTH = 1280;
 	public static final int HEIGHT = 720;
-	private static final float SPEECH_TIME = 5;
+	private static final float SPEECH_TIME = 12;
 	public static final int BEAT_SENTIVITY = 1;
 	public static final boolean TEXT2SPEECH = false;
 	private static final int ROBOT_MAX_ANGLE = 120;
 	private static final float ROBOT_ANIMTIME = 1.f;
 	private static final float ROBOT_REPETION_MIN = 3;
 	private static final float ROBOT_REPETION_MAX = 5;
+	private static final int PROBABILITY_SOUNDS = 166;
+	private static final boolean DEBUG_SERIAL = false;
+	
 
-	boolean CAM_ANIM = true;
-	boolean GEOMETRY_ANIM = false;
-	int ANIM_TIME = 30000;
+	private static final boolean CAM_ANIM = true;
+	private static final boolean GEOMETRY_ANIM = false;
+	private static final int ANIM_TIME = 30000;
+	
+	
+	// KEY-Shortcuts 
 	boolean TEXT = true;
 	boolean GUI = false;
 
@@ -66,8 +72,7 @@ public class Ruidoperla extends PApplet {
 
 	public static final int NOISE = 0;
 	public static final int SILENCE = 1;
-	private static final int PROBABILITY_SOUNDS = 166;
-	private static final boolean DEBUG_SERIAL = false;
+
 
 	// int[] states = { NOISE, SILENCE };
 
@@ -229,8 +234,6 @@ public class Ruidoperla extends PApplet {
 
 		bg.draw();
 
-	
-
 		lights();
 		noiseDetail(octava, falloff);
 		offset -= velocidad / 1000;
@@ -275,7 +278,7 @@ public class Ruidoperla extends PApplet {
 		fill(255);
 
 		checkState();
-		
+
 		// LOOK
 		fx.render().blur(2, 2.0f)
 				// .chromaticAberration()
@@ -321,61 +324,62 @@ public class Ruidoperla extends PApplet {
 	}
 
 	public void setState(int state) {
-			actualSTATE = state;
-	
-			switch (actualSTATE) {
-			case NOISE:
-				println("state switched to NOISE");
-				bg.resetColors();
-				resetTimer = 0;
-				Ani delayAni = new Ani(this, DELAY_TO_SPEECH, "resetTimer", DELAY_TO_SPEECH, Ani.LINEAR, "onEnd:recallNoise");
-	
-				delayAni.start();
-	
-				// recallNoise();
-	
-				// in 60 sec setstate SILENCE
-				time = 0;
-				Ani.to(this, SPEECH_TIME, "time", (int) SPEECH_TIME, Ani.LINEAR, "onEnd:setStateSilence");
-	//			Ani.to()
-	
-				break;
-	
-	//			SPEECH activado / los textos se van 
-			case SILENCE:
-	
-				println("state switched to SILENCE");
-	
-				textObject.pause();
-				soundObject.crash();
-				soundObject.playActualSpeech();
-				soundObject.backgroundSound.stop();
-	//			bg.complementeryColors();
-	//			bg.tetadricColors();
-				bg.blendColor(3);
-	
-				velocidad = 0;
-				falloff = 0;
-				octava = 0;
-				break;
-	
-			default:
-				break;
-			}
+		actualSTATE = state;
+
+		switch (actualSTATE) {
+		case NOISE:
+			println("state switched to NOISE");
+//			bg.resetColors();
+			bg.blendtoResetColors(8);
+			resetTimer = 0;
+			Ani delayAni = new Ani(this, DELAY_TO_SPEECH, "resetTimer", DELAY_TO_SPEECH, Ani.LINEAR,
+					"onEnd:recallNoise");
+
+			delayAni.start();
+
+			// recallNoise();
+
+			// in 60 sec setstate SILENCE
+			time = 0;
+			Ani.to(this, SPEECH_TIME, "time", (int) SPEECH_TIME, Ani.LINEAR, "onEnd:setStateSilence");
+			// Ani.to()
+
+			break;
+
+		// SPEECH activado / los textos se van
+		case SILENCE:
+
+			println("state switched to SILENCE");
+
+			textObject.pause();
+			soundObject.crash();
+			soundObject.playActualSpeech();
+			soundObject.backgroundSound.stop();
+			// bg.complementeryColors();
+			// bg.tetadricColors();
+			bg.blendtoTetradicColors(8);
+
+			velocidad = 0;
+			falloff = 0;
+			octava = 0;
+			break;
+
+		default:
+			break;
 		}
+	}
 
 	public void recallNoise() {
 		println("recall to noise");
-		
+
 		velocidad = 17;
 		octava = 2;
 		falloff = 1.06f;
-		
+
 		textObject.resume();
 		soundObject.backgroundSound.play();
 		// back to init colors
-		
-	
+
 	}
 
 	public void checkState() {
@@ -396,14 +400,12 @@ public class Ruidoperla extends PApplet {
 //				moveRobot(0.7f, 180);
 				moveRobot(ROBOT_ANIMTIME, ROBOT_MAX_ANGLE);
 
-				
-
 			}
 
 			// --------
-			// PLANE - BREAK 
-			///////----------
-			
+			// PLANE - BREAK
+			/////// ----------
+
 			fill(255, 249, 49, 255);
 			for (int y = 0; y < resY - 1; y++) {
 				// for every single row
@@ -509,6 +511,19 @@ public class Ruidoperla extends PApplet {
 			gradient.setInterpolationMode(Interpolation.SMOOTH_STEP);
 		}
 
+		public void blendtoResetColors(int time) {
+			blendfactor = 0;
+//			gradient = new Gradient(resetColors[0], resetColors[1], resetColors[2], resetColors[3]);
+			toClr = resetColors;
+
+			for (int i = 0; i < fromClr.length; i++) {
+				fromClr[i] = actualCrl[i];
+			}
+
+			clrAni = new Ani(this, time, 0, "blendfactor", 1.0f, Ani.EXPO_IN_OUT);
+
+		}
+
 		public void complementeryColors() {
 			complementery = Palette.complementary();
 			gradient = new Gradient(complementery[0], complementery[1]);
@@ -524,7 +539,7 @@ public class Ruidoperla extends PApplet {
 			gradient.primeAnimation();
 		}
 
-		public void blendColor(float time) {
+		public void blendtoTetradicColors(float time) {
 			blendfactor = 0;
 			toClr = Palette.tetradic();
 
