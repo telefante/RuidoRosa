@@ -1,5 +1,7 @@
 
 //import java.io.Serial;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 //import java.util.Iterator;
 
@@ -49,6 +51,8 @@ public class Ruidoperla extends PApplet {
 	public static final int WIDTH = 1280;
 	public static final int HEIGHT = 720;
 	private static final String FONT_TTF = "hwt-Unit-Gothic.ttf";
+	private static final String CHANCE_SOUNDS_DIR = "chanceSounds/";
+	
 	private static final int FONT_SIZE = 96;
 	private static final float SPEECH_TIME = 220;
 	public static final int BEAT_SENTIVITY = 1;
@@ -59,14 +63,12 @@ public class Ruidoperla extends PApplet {
 	private static final float ROBOT_REPETION_MAX = 5;
 	private static final int PROBABILITY_SOUNDS = 166;
 	private static final boolean DEBUG_SERIAL = false;
-	
 
 	private static final boolean CAM_ANIM = true;
 	private static final boolean GEOMETRY_ANIM = false;
 	private static final int ANIM_TIME = 30000;
-	
-	
-	// KEY-Shortcuts 
+
+	// KEY-Shortcuts
 	boolean TEXT = true;
 	boolean GUI = false;
 
@@ -74,7 +76,6 @@ public class Ruidoperla extends PApplet {
 
 	public static final int NOISE = 0;
 	public static final int SILENCE = 1;
-
 
 	// int[] states = { NOISE, SILENCE };
 
@@ -152,7 +153,7 @@ public class Ruidoperla extends PApplet {
 	Actor pan, tilt;
 
 	String[] speechFiles = { "hey.wav", "woher.wav" };
-	String[] chanceFiles = { "violin-bow-on-cymbal-a.wav" };
+	String[] chanceFiles;
 	String[] crashs = { "270138__theriavirra__02-ride-silent-cymbals-snares.wav",
 			"621612__strangehorizon__sabian-20-ride-2.wav" };
 	public float resetTimer;
@@ -165,6 +166,15 @@ public class Ruidoperla extends PApplet {
 	@Override
 	public void setup() {
 		Ani.init(this);
+
+		chanceFiles = getFilenames("./data/"+CHANCE_SOUNDS_DIR);
+		printArray(chanceFiles);
+//		String d = sketchPath("data");	
+//		println(d);
+//		String path = sketchOutputPath();
+//		String path = sketchPath("data"+File.separator+"chanceSounds");
+		
+		// printArray(names);
 
 		noCursor();
 		resetTimer = 0;
@@ -229,6 +239,23 @@ public class Ruidoperla extends PApplet {
 		// begin with NOISE
 		setState(NOISE);
 
+	}
+
+	public String[] getFilenames(String path) {
+		String[] filenames = null;
+		try {
+			File file = new File(path);
+			File[] files = file.listFiles();
+			filenames = new String[files.length];
+			System.out.println("Current dir : " + file.getCanonicalPath());
+			for (int fileInList = 0; fileInList < files.length; fileInList++) {
+				//System.out.println(files[fileInList].getName());
+				filenames[fileInList] = files[fileInList].getName();
+			}
+			
+		} catch (IOException ex) {
+		}
+		return filenames;
 	}
 
 	@Override
@@ -322,6 +349,18 @@ public class Ruidoperla extends PApplet {
 				// randomCameraMove();
 				animateCamera();
 			}
+		}
+	}
+
+	// This function returns all the files in a directory as an array of Strings
+	String[] listFileNames(String dir) {
+		File file = new File(dir);
+		if (file.isDirectory()) {
+			String names[] = file.list();
+			return names;
+		} else {
+			// If it's not a directory
+			return null;
 		}
 	}
 
@@ -572,7 +611,8 @@ public class Ruidoperla extends PApplet {
 
 	class SoundObj {
 
-//		SoundFile file;
+
+		//		SoundFile file;
 		SoundFile[] speechSounds;
 		SoundFile backgroundSound;
 		SoundFile[] chanceSound;
@@ -636,7 +676,7 @@ public class Ruidoperla extends PApplet {
 			}
 
 			for (int i = 0; i < _chanceSoundsFilenames.length; i++) {
-				chanceSound[i] = new SoundFile(p, _chanceSoundsFilenames[i]);
+				chanceSound[i] = new SoundFile(p, CHANCE_SOUNDS_DIR+_chanceSoundsFilenames[i]);
 				chanceSound[i].stop();
 			}
 
@@ -728,7 +768,7 @@ public class Ruidoperla extends PApplet {
 	}
 
 	class Texts {
-		
+
 		String[] lines;
 		float x, y;
 		PFont font;
@@ -745,7 +785,7 @@ public class Ruidoperla extends PApplet {
 			y = height * 0.5f;
 //			font = createFont("SourceCodePro-Regular.ttf", 114);
 			font = createFont(FONT_TTF, FONT_SIZE);
-			
+
 			active = true;
 			lines = loadFile(file);
 			actualIndex = 0;
@@ -759,8 +799,8 @@ public class Ruidoperla extends PApplet {
 			// Ani.to(this, fadeIn, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
 			fadeInAni = new Ani(this, fadeIn, firstDelay, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
 			fontsize = (int) (height * 0.12f);
-			
-			println("fontsize = " +fontsize);
+
+			println("fontsize = " + fontsize);
 
 		}
 
