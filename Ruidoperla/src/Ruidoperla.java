@@ -35,6 +35,7 @@ import processing.serial.*;
 
 public class Ruidoperla extends PApplet {
 
+	private static final float DELAY_TO_SPEECH = 2.f;
 	private static final int NUM_RASSEL_ROBOTS = 4;
 	private static final int TILT_ACTOR_PIN = 4;
 	private static final int PAN_ACTOR_PIN = 5;
@@ -47,14 +48,13 @@ public class Ruidoperla extends PApplet {
 
 	public static final int WIDTH = 1280;
 	public static final int HEIGHT = 720;
-	private static final float SPEECH_TIME = 50;
+	private static final float SPEECH_TIME = 5;
 	public static final int BEAT_SENTIVITY = 1;
 	public static final boolean TEXT2SPEECH = false;
 	private static final int ROBOT_MAX_ANGLE = 120;
 	private static final float ROBOT_ANIMTIME = 1.f;
 	private static final float ROBOT_REPETION_MIN = 3;
 	private static final float ROBOT_REPETION_MAX = 5;
-
 
 	boolean CAM_ANIM = true;
 	boolean GEOMETRY_ANIM = false;
@@ -146,7 +146,9 @@ public class Ruidoperla extends PApplet {
 
 	String[] speechFiles = { "hey.wav", "woher.wav" };
 	String[] chanceFiles = { "violin-bow-on-cymbal-a.wav" };
-	String[] crashs = {"270138__theriavirra__02-ride-silent-cymbals-snares.wav", "621612__strangehorizon__sabian-20-ride-2.wav" };
+	String[] crashs = { "270138__theriavirra__02-ride-silent-cymbals-snares.wav",
+			"621612__strangehorizon__sabian-20-ride-2.wav" };
+	public float resetTimer;
 
 	// method used only for setting the size of the window
 	public void settings() {
@@ -158,6 +160,7 @@ public class Ruidoperla extends PApplet {
 		Ani.init(this);
 
 		noCursor();
+		resetTimer = 0;
 
 		// INIT TEXT
 
@@ -226,6 +229,8 @@ public class Ruidoperla extends PApplet {
 
 		bg.draw();
 
+	
+
 		lights();
 		noiseDetail(octava, falloff);
 		offset -= velocidad / 1000;
@@ -269,57 +274,8 @@ public class Ruidoperla extends PApplet {
 		textSize(48);
 		fill(255);
 
-		switch (actualSTATE) {
-		case NOISE:
-
-			soundObject.chanceSound(PROBABILITY_SOUNDS);
-
-			break;
-
-		case SILENCE:
-
-			if (soundObject.detectBeat()) {
-				println("MOVE ROBOT");
-
-				// velocidad y grados
-//				moveRobot(0.7f, 180);
-				moveRobot(ROBOT_ANIMTIME, ROBOT_MAX_ANGLE);
-
-				// poner en pausa audio - activar motor de pan&tilt
-
-			}
-
-			fill(255, 249, 49, 255);
-			for (int y = 0; y < resY - 1; y++) {
-				// for everysingle row
-				// beginShape(TRIANGLE_STRIP);
-
-				beginShape(QUAD_STRIP);
-				for (int x = 0; x < resX; x++) {
-					vertex(x * scl, y * scl, 0);
-					vertex(x * scl, (y + 1) * scl, 0);
-					// DISPLAY TEXT -
-
-				}
-				endShape();
-			}
-
-			if (!soundObject.isPlaying()) {
-				// speech.parar();
-				setState(NOISE);
-
-			}
-
-			// println(panRot);
-			pan.rot = panRot;
-			tilt.rot = tiltRot;
-
-			break;
-
-		default:
-			break;
-		}
-
+		checkState();
+		
 		// LOOK
 		fx.render().blur(2, 2.0f)
 				// .chromaticAberration()
@@ -364,6 +320,120 @@ public class Ruidoperla extends PApplet {
 		}
 	}
 
+	public void setState(int state) {
+			actualSTATE = state;
+	
+			switch (actualSTATE) {
+			case NOISE:
+				println("state switched to NOISE");
+				bg.resetColors();
+				resetTimer = 0;
+				Ani delayAni = new Ani(this, DELAY_TO_SPEECH, "resetTimer", DELAY_TO_SPEECH, Ani.LINEAR, "onEnd:recallNoise");
+	
+				delayAni.start();
+	
+				// recallNoise();
+	
+				// in 60 sec setstate SILENCE
+				time = 0;
+				Ani.to(this, SPEECH_TIME, "time", (int) SPEECH_TIME, Ani.LINEAR, "onEnd:setStateSilence");
+	//			Ani.to()
+	
+				break;
+	
+	//			SPEECH activado / los textos se van 
+			case SILENCE:
+	
+				println("state switched to SILENCE");
+	
+				textObject.pause();
+				soundObject.crash();
+				soundObject.playActualSpeech();
+				soundObject.backgroundSound.stop();
+	//			bg.complementeryColors();
+	//			bg.tetadricColors();
+				bg.blendColor(3);
+	
+				velocidad = 0;
+				falloff = 0;
+				octava = 0;
+				break;
+	
+			default:
+				break;
+			}
+		}
+
+	public void recallNoise() {
+		println("recall to noise");
+		
+		velocidad = 17;
+		octava = 2;
+		falloff = 1.06f;
+		
+		textObject.resume();
+		soundObject.backgroundSound.play();
+		// back to init colors
+		
+	
+	}
+
+	public void checkState() {
+		switch (actualSTATE) {
+		case NOISE:
+
+			soundObject.chanceSound(PROBABILITY_SOUNDS);
+
+//			println(resetTimer);
+			break;
+
+		case SILENCE:
+
+			if (soundObject.detectBeat()) {
+				println("BEAT DETECTED -> MOVE ROBOT");
+
+				// velocidad y grados
+//				moveRobot(0.7f, 180);
+				moveRobot(ROBOT_ANIMTIME, ROBOT_MAX_ANGLE);
+
+				
+
+			}
+
+			// --------
+			// PLANE - BREAK 
+			///////----------
+			
+			fill(255, 249, 49, 255);
+			for (int y = 0; y < resY - 1; y++) {
+				// for every single row
+				// beginShape(TRIANGLE_STRIP);
+
+				beginShape(QUAD_STRIP);
+				for (int x = 0; x < resX; x++) {
+					vertex(x * scl, y * scl, 0);
+					vertex(x * scl, (y + 1) * scl, 0);
+					// DISPLAY TEXT -
+
+				}
+				endShape();
+			}
+
+			if (!soundObject.isSpeechPlaying()) {
+				setState(NOISE);
+
+			}
+			// println(panRot);
+			pan.rot = panRot;
+			tilt.rot = tiltRot;
+
+			break;
+
+		default:
+			break;
+		}
+	}
+
 	public void moveRobot(float duration, int degree) {
 		panRot = 0;
 		tiltRot = 0;
@@ -376,58 +446,15 @@ public class Ruidoperla extends PApplet {
 
 		tiltAni.repeat((int) random(ROBOT_REPETION_MIN, ROBOT_REPETION_MAX));
 
-
-
-	}
-
-	public void setState(int state) {
-		actualSTATE = state;
-
-		switch (actualSTATE) {
-		case NOISE:
-			println("state switched to NOISE");
-
-			velocidad = 17;
-			octava = 2;
-			falloff = 1.06f;
-
-			textObject.resume();
-			soundObject.backgroundSound.play();
-
-			// in 60 sec setstate SILENCE
-			time = 0;
-			Ani.to(this, SPEECH_TIME, "time", (int) SPEECH_TIME, Ani.LINEAR, "onEnd:setStateSilence");
-
-			// back to init colors
-			bg.resetColors();
-
-			break;
-
-//			SPEECH activado / los textos se van 
-		case SILENCE:
-
-			println("state switched to SILENCE");
-
-			textObject.pause();
-			soundObject.crash();
-			soundObject.playActualSpeech();
-			soundObject.backgroundSound.stop();
-//			bg.complementeryColors();
-//			bg.tetadricColors();
-			bg.blendColor(3);
-
-			velocidad = 0;
-			falloff = 0;
-			octava = 0;
-			break;
-
-		default:
-			break;
-		}
 	}
 
 	public void setStateSilence() {
 		setState(SILENCE);
+	}
+
+	public void setStatetoNoise() {
+		setState(NOISE);
+		// soundObject.speechActive = false;
 	}
 
 	class GradientBackground {
@@ -538,7 +565,7 @@ public class Ruidoperla extends PApplet {
 
 		BeatDetector[] beatDetectors;
 //		BeatDetector beatDetector;
-		boolean active;
+		boolean speechActive;
 
 		// Declare a smooth factor to smooth out sudden changes in amplitude.
 		// With a smooth factor of 1, only the last measured amplitude is used for the
@@ -563,11 +590,9 @@ public class Ruidoperla extends PApplet {
 				String[] _crashSoundFilenames) {
 
 			actualSound = 0;
-			active = false;
+			speechActive = false;
 			chanceIndex = 0;
 			crashIndex = 0;
-			
-			
 
 			crashSoundFilenames = _crashSoundFilenames;
 
@@ -575,7 +600,6 @@ public class Ruidoperla extends PApplet {
 			beatDetectors = new BeatDetector[_speechSoundFilenames.length];
 			chanceSound = new SoundFile[_chanceSoundsFilenames.length];
 			crashSounds = new SoundFile[crashSoundFilenames.length];
-			
 
 			speechSoundfilenames = _speechSoundFilenames;
 			chanceSoundFilenames = _chanceSoundsFilenames;
@@ -599,12 +623,11 @@ public class Ruidoperla extends PApplet {
 				chanceSound[i].stop();
 			}
 
-			
 			for (int i = 0; i < _crashSoundFilenames.length; i++) {
 				crashSounds[i] = new SoundFile(p, _crashSoundFilenames[i]);
-								
+
 			}
-			
+
 			backgroundSound = new SoundFile(p, "agua.wav");
 			// backgroundSound.play();
 			backgroundSound.loop();
@@ -652,12 +675,12 @@ public class Ruidoperla extends PApplet {
 
 		public void playActualSpeech() {
 
-			if (!speechSounds[actualSound].isPlaying())
+			// if (!speechSounds[actualSound].isPlaying())
 
-				println("play " + speechSoundfilenames[actualSound]);
+			println("play " + speechSoundfilenames[actualSound]);
 			speechSounds[actualSound].play();
 			speechSounds[actualSound].add(.3f);
-			active = true;
+			speechActive = true;
 		}
 
 		public void comienzo() {
@@ -670,19 +693,19 @@ public class Ruidoperla extends PApplet {
 
 		public void parar() {
 			speechSounds[actualSound].stop();
-			active = false;
+			speechActive = false;
 		}
 
-		public boolean isPlaying() {
-			boolean p = speechSounds[actualSound].isPlaying();
+		public boolean isSpeechPlaying() {
+			boolean isplaying = speechSounds[actualSound].isPlaying();
 
-			if (!p) {
-				active = false;
+			if (!isplaying) {
+				speechActive = false;
 				actualSound = (actualSound + 1) % speechSounds.length;
-//				beatDetectors[actualSound].input(speechSounds[actualSound]);
+				// beatDetectors[actualSound].input(speechSounds[actualSound]);
 //				beatDetectors[actualSound].sensitivity(BEAT_SENTIVITY);
 			}
-			return p;
+			return isplaying;
 		}
 
 	}
