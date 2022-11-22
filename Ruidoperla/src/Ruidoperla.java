@@ -48,7 +48,9 @@ public class Ruidoperla extends PApplet {
 
 	public static final int WIDTH = 1280;
 	public static final int HEIGHT = 720;
-	private static final float SPEECH_TIME = 12;
+	private static final String FONT_TTF = "hwt-Unit-Gothic.ttf";
+	private static final int FONT_SIZE = 96;
+	private static final float SPEECH_TIME = 220;
 	public static final int BEAT_SENTIVITY = 1;
 	public static final boolean TEXT2SPEECH = false;
 	private static final int ROBOT_MAX_ANGLE = 120;
@@ -726,9 +728,10 @@ public class Ruidoperla extends PApplet {
 	}
 
 	class Texts {
+		
 		String[] lines;
 		float x, y;
-		PFont f;
+		PFont font;
 		int actualIndex;
 		float fadeIn, fadeOut, firstDelay;
 		float sustain;
@@ -740,7 +743,9 @@ public class Ruidoperla extends PApplet {
 		Texts(String file) {
 			x = width * 0.5f;
 			y = height * 0.5f;
-			f = createFont("SourceCodePro-Regular.ttf", 114);
+//			font = createFont("SourceCodePro-Regular.ttf", 114);
+			font = createFont(FONT_TTF, FONT_SIZE);
+			
 			active = true;
 			lines = loadFile(file);
 			actualIndex = 0;
@@ -753,7 +758,9 @@ public class Ruidoperla extends PApplet {
 			firstDelay = 0.f;
 			// Ani.to(this, fadeIn, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
 			fadeInAni = new Ani(this, fadeIn, firstDelay, "alpha", 255.f, Ani.EXPO_IN_OUT, "onEnd:fadeOutAfter");
-			fontsize = (int) (height * 0.07f);
+			fontsize = (int) (height * 0.12f);
+			
+			println("fontsize = " +fontsize);
 
 		}
 
@@ -794,7 +801,7 @@ public class Ruidoperla extends PApplet {
 
 				pushMatrix();
 				translate(x, y);
-				textFont(f, fontsize);
+				textFont(font, fontsize);
 				fill(255, alpha);
 				textAlign(CENTER);
 				text(lines[actualIndex], 0, 0);
